@@ -1,0 +1,37 @@
+<!-- creates o robot from /urdf/slidebot.xacro
+opens rviz and loads robot 
+call joint_state_publisher_gui node sou you can interact with the robot -->
+
+<launch>
+
+  <arg name="gui" default="True" /> 
+  <arg name="display" default="False"/> 
+  <arg name="rViz" default="True"/> 
+
+  <!-- load the urdf into the parameter server -->
+  <!-- <param name="robot_description" textfile="$(find homework2)/urdf/model.urdf" /> -->
+  <param name="robot_description"  command="xacro '$(find diff_drive)/urdf/slidebot.xacro'" />
+
+  <!-- The robot_state_publisher reads the urdf from /robot_description parameter
+       and listens to joint information on the /joint_states topic -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
+
+  <!-- The joint state publisher will be launched with a gui, read the urdf from /robot_description
+       and publish the joint values on /joint_states --> 
+  <group if="$(arg display)">
+     <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"/>
+  </group>      
+  
+  <group if="$(arg gui)">
+     <node name="joint_state_publisher_gui" pkg="joint_state_publisher_gui" type="joint_state_publisher_gui"/>
+  </group>
+
+
+  <!-- rviz will enable us to see the robot -->
+  <group if="$(arg rViz)">
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find diff_drive)/config/view_robot.rviz"/>
+  </group>
+
+
+
+</launch>
