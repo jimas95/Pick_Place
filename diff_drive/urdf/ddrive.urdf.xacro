@@ -1,0 +1,142 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="slidebot">
+
+<xacro:include filename="$(find diff_drive)/urdf/materials.xacro"/>
+
+<xacro:property name="yaml_file" value="$(find diff_drive)/config/robo_parameters.yaml" />
+<xacro:property name="props"  value="${load_yaml(yaml_file)}"/>
+<xacro:property name="scale"  value="${props['scale']}" />
+<xacro:property name="width"  value="${props['width' ]*scale}" />
+<xacro:property name="height" value="${props['height']*scale}" />
+<xacro:property name="length" value="${props['length']*scale}" />
+<xacro:property name="length_wheel" value="${props['length_wheel']*scale}" />
+<xacro:property name="flipper_size" value="${props['flipper_size']*scale}" />
+
+
+
+
+<!-- create wheels  -->
+<xacro:macro name="wheel" params="link_name joint_parent L_R">
+    <link name="${link_name}">
+        <visual>
+            <geometry>
+                <cylinder radius="${2*height}" length="${length_wheel}" />
+            </geometry>
+            <origin xyz="0.0 ${L_R*length_wheel/2} 0.0" rpy="${pi/2} 0 0" />
+            <material name="red"/>
+
+        </visual>
+
+    </link>
+
+    <joint name="joint_${link_name}" type="fixed">
+        <parent link="base"/>
+        <child link="${link_name}"/>
+        <origin xyz="${length/2} ${L_R*width/2} 0.0" rpy="0 0 0"/>
+        <axis xyz="0 1 0" rpy="0 0 0"/>
+
+    </joint>
+
+</xacro:macro>
+
+
+<!-- visual for my base frame -->
+  <link name="base">
+    <visual>
+      <geometry>
+        <box size="${length} ${width} ${height}"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <material name="green"/>
+    </visual>
+
+    <collision name='caster_up_collision'>
+        <origin xyz="${-length*3/8} 0 ${height}" rpy=" 0 0 0"/>
+        <geometry>
+            <sphere radius="${height/2}"/>
+      </geometry>
+      <!-- <surface>
+        <friction>
+          <ode>
+            <mu>0</mu>
+            <mu2>0</mu2>
+            <slip1>1.0</slip1>
+            <slip2>1.0</slip2>
+          </ode>
+        </friction>
+      </surface> -->
+    </collision>
+
+    <visual name='caster_up_visual'>
+        <origin xyz="${-length*3/8} 0 ${height}" rpy=" 0 0 0"/>
+        <geometry>
+            <sphere radius="${height/2}"/>
+        </geometry>
+        <material name="yellow"/>
+
+    </visual>
+
+    <collision name='caster_down_collision'>
+        <origin xyz="${-length*3/8} 0 -${height}" rpy=" 0 0 0"/>
+        <geometry>
+            <sphere radius="${height/2}"/>
+        </geometry>
+      <!-- <surface>
+        <friction>
+          <ode>
+            <mu>0</mu>
+            <mu2>0</mu2>
+            <slip1>1.0</slip1>
+            <slip2>1.0</slip2>
+          </ode>
+        </friction>
+      </surface> -->
+    </collision>
+
+    <visual name='caster_down_visual'>
+        <origin xyz="${-length*3/8} 0 -${height}" rpy=" 0 0 0"/>
+        <geometry>
+            <sphere radius="${height/2}"/>
+        </geometry>
+        <material name="yellow"/>
+
+    </visual>
+
+
+  </link>
+
+<link name="flipper">
+    <visual>
+      <geometry>
+        <box size="${flipper_size} ${flipper_size} ${length*2/3}"/>
+      </geometry>
+      <origin xyz="0.0 0 ${length*2/6}" rpy="0 0 0" />
+      <material name="blue"/>
+    </visual>
+
+    <visual>
+      <geometry>
+        <sphere radius="${height/2}"/>
+      </geometry>
+      <origin xyz="0.0 0 ${length*2/3}" rpy="0 0 0" />
+      <material name="yellow"/>
+    </visual>
+
+  </link>
+
+
+  <joint name="joint_flipper" type="continuous">
+    <parent link="base"/>
+    <child link="flipper"/>
+    <origin xyz="${length/2+flipper_size/2} 0 0.0" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+
+  </joint>
+
+
+  <!-- create wheels -->
+  <xacro:wheel link_name="left_wheel"  joint_parent="base" L_R="1.0"/>
+  <xacro:wheel link_name="right_wheel" joint_parent="base" L_R="-1.0"/>
+
+  </robot>
+
