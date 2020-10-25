@@ -10,7 +10,7 @@ call joint_state_publisher_gui node sou you can interact with the robot -->
 
   <!-- load the urdf into the parameter server -->
   <!-- <param name="robot_description" textfile="$(find homework2)/urdf/model.urdf" /> -->
-  <param name="robot_description"  command="xacro '$(find diff_drive)/urdf/slidebot.xacro'" />
+  <param name="robot_description"  command="xacro '$(find diff_drive)/urdf/m2wr.xacro'" />
 
   <!-- The robot_state_publisher reads the urdf from /robot_description parameter
        and listens to joint information on the /joint_states topic -->
@@ -29,7 +29,7 @@ call joint_state_publisher_gui node sou you can interact with the robot -->
 
   <!-- rviz will enable us to see the robot -->
   <group if="$(arg rViz)">
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find diff_drive)/config/view_robot.rviz"/>
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find diff_drive)/rviz/view_robot.rviz"/>
   </group>
 
 
