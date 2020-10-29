@@ -49,6 +49,8 @@ class robotControl:
         rospy.loginfo(self.name + " directional angle is ---> " + str(self.theta_dir*(180.0/math.pi)))
 
 
+
+
     def calVelocity(self):   # this is my control....
         #conver orientation
         
@@ -57,20 +59,20 @@ class robotControl:
         (roll, pitch, yaw) = euler_from_quaternion (orientation_list)
         rospy.loginfo(self.name + " current angle is ---> " + str(yaw*(180.0/math.pi)))
 
-        angle_speed = math.pi*2 + self.theta_dir - yaw
-        rospy.loginfo(self.name + " velovity angle is ---> " + str(angle_speed))
+        angle_speed = self.theta_dir - yaw
 
-        # if(angle_speed <-math.pi):
-        #     angle_speed = 2*math.pi - angle_speed
+        if(angle_speed <-math.pi):
+            angle_speed = 2*math.pi + angle_speed
 
-        # if(angle_speed>math.pi):
-        #     angle_speed = -(2*math.pi - angle_speed)
-
-        # self.velocity.linear = Vector3(0.6,0,0)
-        self.velocity.angular = Vector3(0,0,angle_speed)
+        if(angle_speed>math.pi):
+            angle_speed = -(2*math.pi - angle_speed)
+        rospy.loginfo(self.name + " velocity angle is ---> " + str(angle_speed*(180.0/math.pi)))
+        rospy.loginfo(self.name + " hunting point is ---> " + str(self.point_target))
+        self.velocity.linear = Vector3(0.6,0,0)
+        self.velocity.angular = Vector3(0,0,-angle_speed)
 
         # if(self.distance>2.0):
-        #     self.velocity.linear = Vector3(1.5,0,0)
+            # self.velocity.linear = Vector3(1.5,0,0)
 
     #checks if we reached last point
     def set_next_point(self):
