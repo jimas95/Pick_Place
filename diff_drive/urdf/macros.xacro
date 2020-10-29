@@ -1,22 +1,29 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <xacro:property name="robo_parameters" value="$(find diff_drive)/config/robo_parameters.yaml" />
+    <xacro:property name="props" value="${load_yaml(robo_parameters)}"/>
+    <xacro:property name="wheel_radius" value="${props['wheel_radius']}" />
+    <xacro:property name="wheel_length" value="${props['wheel_length']}" />
+    <xacro:property name="wheel_mass" value="${props['wheel_mass']}" />
+
     <xacro:macro name="link_wheel" params="name">
         <link name="${name}">
             <inertial>
-              <mass value="0.2"/>
+              <mass value="${wheel_mass}"/>
               <origin rpy="0 1.5707 1.5707" xyz="0 0 0"/>
               <inertia ixx="0.000526666666667" ixy="0" ixz="0" iyy="0.000526666666667" iyz="0" izz="0.001"/>
             </inertial>
             <collision name="link_right_wheel_collision">
               <origin rpy="0 1.5707 1.5707" xyz="0 0 0"/>
               <geometry>
-                <cylinder length="0.04" radius="0.1"/>
+                <cylinder length="${wheel_length}" radius="${wheel_radius}"/>
               </geometry>
             </collision>
             <visual name="${name}_visual">
               <origin rpy="0 1.5707 1.5707" xyz="0 0 0"/>
               <geometry>
-                <cylinder length="0.04" radius="0.1"/>
+                <cylinder length="${wheel_length}" radius="${wheel_radius}"/>
               </geometry>
             </visual>
         </link>
