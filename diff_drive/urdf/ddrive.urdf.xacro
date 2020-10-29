@@ -12,20 +12,6 @@
 <xacro:property name="height" value="${props['height']}" />
 <xacro:property name="caster_radius" value="${props['caster_radius']}" />
 
-  <!-- <link name="World">
-      <visual>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <geometry>  
-        <box size="${width} ${length} ${height}"/>
-      </geometry>
-    </visual>
-  </link>
-
-  <joint name="World_Joint" type="fixed">
-  <origin rpy="0 0 0" xyz="0 0 0"/>
-  <child link="link_chassis"/>
-  <parent link="World"/>
-  </joint> -->
   
 <link name="dummy">
    </link>
