@@ -21,6 +21,7 @@
       <wheelDiameter>0.2</wheelDiameter>
       <publishOdomTF>true</publishOdomTF>
       <torque>0.1</torque>
+      <wheelTorque>1.0</wheelTorque>
       <commandTopic>cmd_vel</commandTopic>
       <odometryTopic>odom</odometryTopic>
       <odometryFrame>odom</odometryFrame>
@@ -30,7 +31,7 @@
       <wheelAcceleration>false</wheelAcceleration>
       <publishTf>1</publishTf>
       <rosDebugLevel>na</rosDebugLevel>
-      <!-- <odometrySource>world</odometrySource> -->
+      <odometrySource>world</odometrySource>
 
 
     </plugin>
