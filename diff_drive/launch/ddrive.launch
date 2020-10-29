@@ -1,28 +1,39 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <launch>
-        <!-- overwriting these args -->
-        <arg name="debug" default="false" />
-        <arg name="gui" default="true" />
-        <arg name="pause" default="true" />
-        <arg name="world" default="$(find diff_drive)/worlds/ddrive.world" />
 
-        <!-- include gazebo_ros launcher -->
-        <include file="$(find gazebo_ros)/launch/empty_world.launch">
-                <arg name="world_name" value="$(arg world)" />
-                <arg name="debug" value="$(arg debug)" />
-                <arg name="gui" value="$(arg gui)" />
-                <arg name="paused" value="$(arg pause)" />
-                <arg name="use_sim_time" value="true" />
-        </include>
+    <rosparam command="load" file="$(find diff_drive)/config/pointSet.yaml" />
 
-        <!-- Convert xacro and put on parameter server -->
-<!-- <param name="robot_description" command="$(find xacro)/xacro '$(find diff_drive)/urdf/ddrive.urdf.xacro'" /> -->
+    <!-- overwriting these args -->
+    <arg name="debug" default="false" />
+    <arg name="gui" default="true" />
+    <arg name="pause" default="true" />
+    <arg name="world" default="$(find diff_drive)/worlds/ddrive.world" />
+
+    <!-- include gazebo_ros launcher -->
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+            <arg name="world_name" value="$(arg world)" />
+            <arg name="debug" value="$(arg debug)" />
+            <arg name="gui" value="$(arg gui)" />
+            <arg name="paused" value="$(arg pause)" />
+            <arg name="use_sim_time" value="true" />
+    </include>
+
+    <!-- Convert xacro and put on parameter server -->
+<param name="robot_description" command="$(find xacro)/xacro '$(find diff_drive)/urdf/ddrive.urdf.xacro'" />
 
 <!-- Spawn a robot into Gazebo -->
-<!-- <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/> -->
+<node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
 <!-- <node name="joint_state_publisher_gui" pkg="joint_state_publisher_gui" type="joint_state_publisher_gui"/> -->
 <!-- <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"/> -->
 <!-- <node name="rviz" pkg="rviz" type="rviz" args="-d $(find diff_drive)/rviz/view_robot.rviz"/> -->
-<!-- <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -model ddrive" /> -->
+
+    
+    <arg name="x" default="0"/>
+    <arg name="y" default="0"/>
+    <arg name="z" default="0.5"/>
+    
+    <node name="mybot_spawn" pkg="gazebo_ros" type="spawn_model" output="screen"
+          args="-urdf -param robot_description -model ddrive -x $(arg x) -y $(arg y) -z $(arg z)" />
+          
 
 </launch>
