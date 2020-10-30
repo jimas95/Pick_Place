@@ -1,7 +1,8 @@
 width: 0.5
 length: 0.3
 height: 0.07
-caster_radius: 0.1
+chassis_mass : 0.5
+caster_radius: 0.06
 wheel_radius: 0.1
 wheel_length: 0.04
 wheel_mass : 0.2
