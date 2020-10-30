@@ -61,23 +61,21 @@ class robotControl:
     def update(self,trans):
         self.robotPosition = trans
         self.counter = self.counter + 1
-        rospy.loginfo("counter : " + str(self.counter))
 
-        if(self.counter>75):
-            self.go_backward()
-            if(self.counter>130):
-                self.flip_b()
+        if(self.counter>25):
+            # self.velocity.linear = Vector3(-3,0,0)
+            self.velocity.linear = Vector3(0,0,0)
         else:
-            self.go_forward()
-            if(self.counter>50):
-                self.flip_f()
-        
-        if(self.counter>150):
-            self.counter = 0
+            self.velocity.linear = Vector3(5,0,0)
 
+        if(self.counter>100):
+            self.counter = 0 
 
+        self.velocity.angular = Vector3(0,0,0)
+        # self.velocity.linear = Vector3(-0.4,0,0)
         rospy.loginfo("Debug")
-        # rospy.loginfo(self.velocity)
+        rospy.loginfo("counter : " + str(self.counter))
+        rospy.loginfo("Velocity : "+ str(self.velocity.linear))
         self.pub.publish(self.velocity)
         
 
@@ -95,7 +93,7 @@ def talker():
 
         try:
             trans = tfBuffer.lookup_transform("odom", 'link_chassis', rospy.Time())
-            rospy.loginfo(trans.transform.translation)
+            # rospy.loginfo(trans.transform.translation)
             controler.update(trans.transform)
 
             # rospy.loginfo(trans.transform.rotation)
