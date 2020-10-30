@@ -1,7 +1,7 @@
 width: 0.5
 length: 0.3
 height: 0.07
-caster_radius: 0.05
+caster_radius: 0.1
 wheel_radius: 0.1
 wheel_length: 0.04
 wheel_mass : 0.2
