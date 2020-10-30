@@ -22,13 +22,23 @@
    </joint>
 
 
+
+<!-- width**2 = 0.25
+d**2 = 0.09
+height**2 = 0.0049
+
+5/12 = 2.4 
+width + d * mass/12 = 0.816
+d + h * mass/12 = 0.22776
+w+ h * mass/12 =  0.61176 -->
+
   <link name="link_chassis">
     <!-- pose and inertial -->
-    <pose>0 0 0.1 0 0 0</pose>
+    <pose>0 0 0.0 0 0 0</pose>
     <inertial>
-      <mass value="5"/>
-      <origin rpy="0 0 0" xyz="0 0 0.1"/>
-      <inertia ixx="0.0395416666667" ixy="0" ixz="0" iyy="0.106208333333" iyz="0" izz="0.106208333333"/>
+      <mass value="0.5"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <inertia ixx="0.022776" ixy="0" ixz="0" iyy="0.061176" iyz="0" izz="0.0816"/>
     </inertial>
     <!-- body -->
     <collision name="collision_chassis">
@@ -97,8 +107,8 @@
 
   
   <xacro:link_wheel name="link_right_wheel" />
-  <xacro:joint_wheel name="joint_right_wheel" child="link_right_wheel" origin_xyz="-0.05 0.20 0" />
+  <xacro:joint_wheel name="joint_right_wheel" child="link_right_wheel" origin_xyz="-0.2 0.20 0" />
   
   <xacro:link_wheel name="link_left_wheel" />
-  <xacro:joint_wheel name="joint_left_wheel" child="link_left_wheel" origin_xyz="-0.05 -0.20 0" />
+  <xacro:joint_wheel name="joint_left_wheel" child="link_left_wheel" origin_xyz="-0.2 -0.20 0" />
 </robot>

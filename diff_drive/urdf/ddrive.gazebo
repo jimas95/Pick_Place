@@ -5,10 +5,47 @@
     <material>Gazebo/Orange</material>
   </gazebo>
   <gazebo reference="link_left_wheel">
+      <mu1>10</mu1>
+    <mu2>10</mu2>
+    <kp>500000.0</kp>
+    <kd>10.0</kd>
+    <minDepth>0.001</minDepth>
+    <maxVel>200</maxVel>
+    <fdir1>1 0 0</fdir1>
     <material>Gazebo/Blue</material>
   </gazebo>
   <gazebo reference="link_right_wheel">
+      <mu1>10</mu1>
+    <mu2>10</mu2>
+    <kp>500000.0</kp>
+    <kd>10.0</kd>
+    <minDepth>0.001</minDepth>
+    <maxVel>200</maxVel>
+    <fdir1>1 0 0</fdir1>
     <material>Gazebo/Blue</material>
+  </gazebo>
+
+
+  <gazebo reference="caster_up_collision">
+    <mu1>0.01</mu1>
+    <mu2>0.01</mu2>
+    <kp>1000000.0</kp>
+    <kd>100.0</kd>
+    <minDepth>0.001</minDepth>
+    <maxVel>1.0</maxVel>
+    <material>Gazebo/FlatBlack</material>
+  </gazebo>
+  
+
+
+  <gazebo reference="caster_down_collision">
+    <mu1>0.1</mu1>
+    <mu2>0.1</mu2>
+    <kp>1000000.0</kp>
+    <kd>100.0</kd>
+    <minDepth>0.001</minDepth>
+    <maxVel>1.0</maxVel>
+    <material>Gazebo/FlatBlack</material>
   </gazebo>
   
   <gazebo>
@@ -20,8 +57,8 @@
       <wheelSeparation>0.4</wheelSeparation>
       <wheelDiameter>0.2</wheelDiameter>
       <publishOdomTF>true</publishOdomTF>
-      <torque>0.1</torque>
-      <wheelTorque>1.0</wheelTorque>
+      <torque>100.1</torque>
+      <wheelTorque>100.0</wheelTorque>
       <commandTopic>cmd_vel</commandTopic>
       <odometryTopic>odom</odometryTopic>
       <odometryFrame>odom</odometryFrame>
