@@ -13,11 +13,11 @@
 <xacro:property name="caster_radius" value="${props['caster_radius']}" />
 
   
-<link name="dummy">
+<link name="odom">
    </link>
 
   <joint name="dummy_joint" type="fixed">
-     <parent link="dummy"/>
+     <parent link="odom"/>
      <child link="link_chassis"/>
    </joint>
 
