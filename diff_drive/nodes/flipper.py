@@ -48,10 +48,9 @@ class robotControl:
 
         self.velocity.angular = Vector3(0,0,0)
         self.pub.publish(self.velocity) # PUBLISH VELOCITY
-        rospy.loginfo("Debug")
-        rospy.loginfo("counter : " + str(self.counter))
-        rospy.loginfo("Velocity : "+ str(self.velocity.linear))
-        
+        rospy.logdebug("Debug")
+        rospy.logdebug("counter : " + str(self.counter))
+        rospy.logdebug("Velocity : "+ str(self.velocity.linear))
         
 
 
