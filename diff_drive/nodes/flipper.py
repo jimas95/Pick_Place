@@ -62,21 +62,40 @@ class robotControl:
         self.robotPosition = trans
         self.counter = self.counter + 1
 
+        # if(self.counter>70):#stop
+        #     self.velocity.linear = Vector3(0,0,0)
+        #     if(self.counter<75):
+        #         self.velocity.linear = Vector3(-2,0,0)
+
+        # elif(self.counter>50):#flip
+        #     self.velocity.linear = Vector3(-5.5,0,0)
+
+        # elif(self.counter>20):#stop
+        #     self.velocity.linear = Vector3(0,0,0)
+        #     if(self.counter<25):
+        #         self.velocity.linear = Vector3(2,0,0)
+
+        # elif(self.counter>0):#flip
+        #     self.velocity.linear = Vector3(5.5,0,0)
+
+
         if(self.counter>70):#stop
             self.velocity.linear = Vector3(0,0,0)
             if(self.counter<75):
-                self.velocity.linear = Vector3(-2,0,0)
+                self.velocity.linear = Vector3(-1.5,0,0)
+
 
         elif(self.counter>50):#flip
-            self.velocity.linear = Vector3(-5.5,0,0)
+            self.velocity.linear = Vector3(-3,0,0)
 
         elif(self.counter>20):#stop
             self.velocity.linear = Vector3(0,0,0)
             if(self.counter<25):
-                self.velocity.linear = Vector3(2,0,0)
+                self.velocity.linear = Vector3(1.5,0,0)
+
 
         elif(self.counter>0):#flip
-            self.velocity.linear = Vector3(5.5,0,0)
+            self.velocity.linear = Vector3(3,0,0)
 
         if(self.counter>100):
             self.counter = 0 

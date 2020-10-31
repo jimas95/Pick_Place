@@ -70,10 +70,10 @@
         <inertial>
           <mass value="0.5"/>
           <origin rpy="0 0 0" xyz="0 0 0"/>
-          <inertia ixx="0.022776" ixy="0" ixz="0" iyy="0.061176" iyz="0" izz="0.0816"/>
-          <!-- <inertia  ixx="${mass*(w*w + d*d)/12}" ixy = "0" ixz = "0"
+          <!-- <inertia ixx="0.022776" ixy="0" ixz="0" iyy="0.061176" iyz="0" izz="0.0816"/> -->
+          <inertia  ixx="${mass*(w*w + d*d)/12}" ixy = "0" ixz = "0"
                     iyy="${mass*(h*h + d*d)/12}" iyz = "0"
-                    izz="${mass*(h*h + w*w)/12}" /> -->
+                    izz="${mass*(h*h + w*w)/12}" />
         </inertial>
     </xacro:macro>
 </robot>
