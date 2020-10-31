@@ -8,7 +8,7 @@ from geometry_msgs.msg import Transform
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
 
 """
-Node Controler
+Node Follow Points
 Publishers : Topic /cmd_vel, type Twist
 Subscribers: Topic tf,       type Transform
 parameters : /point
@@ -120,7 +120,7 @@ class robotControl:
 
 # main loop
 def talker(): 
-    rospy.init_node('Controler', anonymous=False)
+    rospy.init_node('Follow_Points', anonymous=False)
     rate = rospy.Rate(20) # 20HZ
     controler  = robotControl()
 
