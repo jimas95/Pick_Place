@@ -3,10 +3,6 @@
 
     <rosparam command="load" file="$(find diff_drive)/config/pointSet.yaml" />
 
-    <arg name="rViz" default="True" /> 
-    <arg name="flip" default="False" /> 
-    <arg name="follow" default="False" /> 
-
     <!-- overwriting these args -->
     <arg name="debug" default="false" />
     <arg name="gui" default="true" />
@@ -22,25 +18,14 @@
             <arg name="use_sim_time" value="true" />
     </include>
 
-    <!-- Convert xacro and set it as robot_description -->
+    <!-- Convert xacro and put on parameter server -->
 <param name="robot_description" command="$(find xacro)/xacro '$(find diff_drive)/urdf/ddrive.urdf.xacro'" />
 
 <!-- Spawn a robot into Gazebo -->
 <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
-
-<!-- Spawn a robot into rViz -->
-<group if="$(arg rViz)">
-    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find diff_drive)/rviz/view_gazebo.rviz"/>
-</group>
-
-<!-- run nodes -->
-<group if="$(arg flip)">
-    <node name="Flip"  pkg="diff_drive" type="flipper.py" output="screen"/> 
-</group>
-
-<group if="$(arg follow)">
-    <node name="Follow_Points"  pkg="diff_drive" type="follow_rect.py" output="screen"/> 
-</group>
+<!-- <node name="joint_state_publisher_gui" pkg="joint_state_publisher_gui" type="joint_state_publisher_gui"/> -->
+<!-- <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"/> -->
+<!-- <node name="rviz" pkg="rviz" type="rviz" args="-d $(find diff_drive)/rviz/view_robot.rviz"/> -->
 
     
     <arg name="x" default="0"/>
