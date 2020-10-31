@@ -1,16 +1,23 @@
 #!/usr/bin/env python
-
-
 import rospy
 from std_msgs.msg import String
 from geometry_msgs.msg import Twist,Vector3
-# from sensor_msgs.msg import JointState
-from nav_msgs.msg import Odometry
-# from tf2_msgs.msg import TFMessage
 import math
 import tf2_ros
 from geometry_msgs.msg import Transform
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
+
+"""
+Node Controler
+Publishers : Topic /cmd_vel, type Twist
+Subscribers: Topic tf,       type Transform
+parameters : /point
+
+this node gets the position of the robot from the tf tree 
+looking at transformation odom --> link_chassis
+calculates the propere linear and angular velocity 
+for driving the robot in a series of points (in this case a rectungle)
+"""
 
 class robotControl:
 
@@ -57,7 +64,6 @@ class robotControl:
         orientation_q = self.robotPosition.rotation
         orientation_list = [orientation_q.x, orientation_q.y, orientation_q.z, orientation_q.w]
         (roll, pitch, yaw) = euler_from_quaternion (orientation_list)
-        rospy.loginfo(self.name + " current angle is ---> " + str(yaw*(180.0/math.pi)))
 
         angle_speed = self.theta_dir - yaw
 
@@ -66,13 +72,21 @@ class robotControl:
 
         if(angle_speed>math.pi):
             angle_speed = -(2*math.pi - angle_speed)
+
+        rospy.loginfo(self.name + " current angle is ---> " + str(yaw*(180.0/math.pi)))
         rospy.loginfo(self.name + " velocity angle is ---> " + str(angle_speed*(180.0/math.pi)))
         rospy.loginfo(self.name + " hunting point is ---> " + str(self.point_target))
+
+        #set speed 
         self.velocity.linear = Vector3(0.6,0,0)
         self.velocity.angular = Vector3(0,0,-angle_speed)
 
-        # if(self.distance>2.0):
-            # self.velocity.linear = Vector3(1.5,0,0)
+        # go "full speed"
+        if(self.distance>1.0 and abs(angle_speed)<0.25):
+            self.velocity.linear = Vector3(2,0,0)
+
+            
+
 
     #checks if we reached last point
     def set_next_point(self):
@@ -83,13 +97,18 @@ class robotControl:
         
         self.point_target = self.pointSet[self.point_id] #set next target point
 
-
+# main update function
+# calculates direction vector 
+# calculates appropriate speed
+# publish velocity
     def update(self,trans):
+        rospy.loginfo("Debug")
+        
         self.robotPosition = trans
         self.calVector()   
         self.calVelocity()      
 
-        rospy.loginfo("Debug")
+        rospy.loginfo("distance : "+str(self.distance))
         rospy.loginfo(self.velocity)
 
         if(self.distance <  self.thresh):
@@ -99,14 +118,14 @@ class robotControl:
         
 
 
-
-def talker():
-    rospy.init_node('Velocity', anonymous=False)
-    rate = rospy.Rate(20) # 10hz
+# main loop
+def talker(): 
+    rospy.init_node('Controler', anonymous=False)
+    rate = rospy.Rate(20) # 20HZ
     controler  = robotControl()
 
     tfBuffer = tf2_ros.Buffer()
-    listener = tf2_ros.TransformListener(tfBuffer)
+    tf2_ros.TransformListener(tfBuffer)
     while not rospy.is_shutdown():
 
 
@@ -115,19 +134,12 @@ def talker():
             rospy.loginfo(trans.transform.translation)
             controler.update(trans.transform)
 
-            # rospy.loginfo(trans.transform.rotation)
-            # rospy.loginfo(tfBuffer.all_frames_as_string())
-
 
         except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
             rate.sleep()
             continue
 
-        # if(count<15):
-            # message = Twist(Vector3(1,0,0),Vector3(0,0,0)) 
-        
-        # rospy.loginfo("Hello!")
-        # pub.publish(message)
+
         rate.sleep()
 
 

@@ -6,7 +6,7 @@ import math
 import tf2_ros
 
 """
-Node Flipper 
+Node Flip 
 this node is an open loop that makes the robot flip back ang forth on the same line 
 ---- might be sencitive to different machines frecuancy has to be 20 Hz ----
 Publicher : --> geometry_msgs.Twist --> at Topic cmd_vel
@@ -57,12 +57,12 @@ class robotControl:
 
 # main Loop
 def talker(): 
-    rospy.init_node('Velocity', anonymous=False)
+    rospy.init_node('Flip', anonymous=False)
     rate = rospy.Rate(20) # publish freacuancy (DO NOT Change)
     controler  = robotControl()
 
     tfBuffer = tf2_ros.Buffer()
-    listener = tf2_ros.TransformListener(tfBuffer)
+    tf2_ros.TransformListener(tfBuffer)
     while not rospy.is_shutdown():
 
         try:
