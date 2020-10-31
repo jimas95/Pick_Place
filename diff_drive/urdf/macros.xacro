@@ -6,6 +6,7 @@
     <xacro:property name="wheel_radius" value="${props['wheel_radius']}" />
     <xacro:property name="wheel_length" value="${props['wheel_length']}" />
     <xacro:property name="wheel_mass" value="${props['wheel_mass']}" />
+    <xacro:property name="caster_radius" value="${props['caster_radius']}" />
 
     <xacro:macro name="link_wheel" params="name">
         <link name="${name}">
@@ -34,6 +35,24 @@
         <limit effort="10000" velocity="1000"/>
         <joint_properties damping="1.0" friction="1.0"/>
       </joint>
+    </xacro:macro>
+
+
+
+    <xacro:macro name="caster" params="name z" >
+        <collision name="${name}_collision">
+        <origin rpy=" 0 0 0" xyz="0.35 0 ${z}"/>
+        <geometry>
+          <sphere radius="${caster_radius}"/>
+        </geometry>
+
+      </collision>
+      <visual name="${name}_visual">
+        <origin rpy=" 0 0 0" xyz="0.2 0 ${z}"/>
+        <geometry>
+          <sphere radius="${caster_radius}"/>
+        </geometry>
+      </visual>
     </xacro:macro>
     
     <xacro:macro name="cylinder_inertia" params="mass r l">

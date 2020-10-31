@@ -45,36 +45,10 @@
       </geometry>
       <material name="blue"/>
     </visual>
-    <!-- caster down -->
-    <collision name="caster_down_collision">
-      <origin rpy=" 0 0 0" xyz="0.35 0 -0.05"/>
-      <geometry>
-        <sphere radius="${caster_radius}"/>
-      </geometry>
 
-    </collision>
-    <visual name="caster_down_visual">
-      <origin rpy=" 0 0 0" xyz="0.2 0 -0.05"/>
-      <geometry>
-        <sphere radius="${caster_radius}"/>
-      </geometry>
-    </visual>
-
-
-    <!-- caster up -->
-    <collision name="caster_up_collision">
-      <origin rpy=" 0 0 0" xyz="0.35 0 0.05"/>
-      <geometry>
-        <sphere radius="${caster_radius}"/>
-      </geometry>
-
-    </collision>
-    <visual name="caster_up_visual">
-      <origin rpy=" 0 0 0" xyz="0.2 0 0.05"/>
-      <geometry>
-        <sphere radius="${caster_radius}"/>
-      </geometry>
-    </visual>
+    <!-- caster -->
+    <xacro:caster name="caster_down" z="-0.05" />
+    <xacro:caster name="caster_up"   z=" 0.05" />
 
   </link>
   
