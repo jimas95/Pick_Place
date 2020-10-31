@@ -9,12 +9,8 @@
 
     <xacro:macro name="link_wheel" params="name">
         <link name="${name}">
-            <inertial>
-              <mass value="${wheel_mass}"/>
-              <origin rpy="0 1.5707 1.5707" xyz="0 0 0"/>
-              <inertia ixx="0.000526666666667" ixy="0" ixz="0" iyy="0.000526666666667" iyz="0" izz="0.001"/>
-            </inertial>
-            <collision name="link_right_wheel_collision">
+              <xacro:cylinder_inertia mass="${wheel_mass}" r="${wheel_radius}" l="${wheel_length}"/>
+            <collision name="${name}__collision">
               <origin rpy="0 1.5707 1.5707" xyz="0 0 0"/>
               <geometry>
                 <cylinder length="${wheel_length}" radius="${wheel_radius}"/>
@@ -41,8 +37,32 @@
     </xacro:macro>
     
     <xacro:macro name="cylinder_inertia" params="mass r l">
-      <inertia  ixx="${mass*(3*r*r+l*l)/12}" ixy = "0" ixz = "0"
-                iyy="${mass*(3*r*r+l*l)/12}" iyz = "0"
-                izz="${mass*(r*r)/2}" />
+      <inertial>
+        <mass value="${mass}"/>
+        <origin rpy="0 1.5707 1.5707" xyz="0 0 0"/>
+        <inertia  ixx="${mass*(3*r*r+l*l)/12}" ixy = "0" ixz = "0"
+                  iyy="${mass*(3*r*r+l*l)/12}" iyz = "0"
+                  izz="${mass*(r*r)/2}" />
+      </inertial>
+
+    </xacro:macro>
+
+    <xacro:macro name="cube_inertia" params="mass h w d ">
+      <inertia  ixx="${mass*(w*w + d*d)/12}" ixy = "0" ixz = "0"
+                iyy="${mass*(h*h + d*d)/12}" iyz = "0"
+                izz="${mass*(h*h + w*w)/12}" />
     </xacro:macro>
 </robot>
+
+<!-- cube inertia  -->
+<!-- 2.88*(0.3*0.3+0.07*0.07)/12 xx -->
+<!-- 2.88*(0.5*0.5+0.07*0.07)/12 yy -->
+<!-- 2.88*(0.5*0.5+0.3*0.3)/12   zz-->
+
+<!-- cylinder inertia  -->
+<!-- wheel_radius: 0.1 -->
+<!-- wheel_length: 0.04 -->
+<!-- wheel_mass : 0.2 -->
+<!-- 0.2*(3*0.1*0.1+0.04*0.04)/12 -->
+<!-- 0.2*(3*0.1*0.1+0.04*0.04)/12 -->
+<!-- 0.2*(0.1*0.1)/2 -->

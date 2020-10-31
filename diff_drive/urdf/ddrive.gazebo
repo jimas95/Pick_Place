@@ -41,7 +41,7 @@
       <wheelSeparation>0.4</wheelSeparation>
       <wheelDiameter>0.2</wheelDiameter>
       <publishOdomTF>true</publishOdomTF>
-      <torque>100.1</torque>
+      <torque>100.0</torque>
       <wheelTorque>100.0</wheelTorque>
       <commandTopic>cmd_vel</commandTopic>
       <odometryTopic>odom</odometryTopic>
