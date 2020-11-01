@@ -26,8 +26,8 @@
 
   <node if="$(arg use_python_interface)"
     name="moveit_python_interface"
-    pkg="interbotix_moveit_interface"
-    type="moveit_python_interface"
+    pkg="arm_move"
+    type="arm_tutorial.py"
     respawn="false"
     output="screen"
     ns="$(arg robot_name)">
