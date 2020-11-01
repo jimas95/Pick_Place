@@ -8,6 +8,7 @@ import moveit_msgs.msg
 import geometry_msgs.msg
 from math import pi
 from std_msgs.msg import String
+from std_srvs.srv import Trigger,TriggerResponse,TriggerRequest
 from moveit_commander.conversions import pose_to_list
 
 class RobotPX():
@@ -52,13 +53,17 @@ class RobotPX():
         self.eef_link = eef_link
         self.group_names = group_names
 
+        #create services 
+        self.srv_joint_state  = rospy.Service('get_joint_states', Trigger, self.srvf_joint_state)
+        self.srv_eef_position = rospy.Service('get_eef_pose', Trigger, self.srvf_eef_position)
 
 
     def update(self):
-        rate = rospy.Rate(2) # publish freacuancy (DO NOT Change)
+        rate = rospy.Rate(1) # publish freacuancy (DO NOT Change)
         while not rospy.is_shutdown():
             rospy.logdebug("Hello!")
             self.print_joint_state()
+            self.get_eef_pose(True)
             rate.sleep()
 
     def get_joint_state(self):
@@ -71,6 +76,31 @@ class RobotPX():
             rospy.logdebug("joint "+str(i)+ ": " +str(joint*180/pi))
             i+=1
         rospy.logdebug("------")
+
+    def srvf_joint_state(self,TriggerRequest):
+        joint_state = self.get_joint_state()
+        data = ""
+        i=0
+        for joint in joint_state: 
+            data+= "joint " + str(i) + ": " + str(joint*180/pi) + "\n"
+            i+=1
+        msg = TriggerResponse()
+        msg.message = str(joint_state)
+        msg.success = True
+        return msg
+
+
+    def get_eef_pose(self,bool_print):
+        current_pose = self.group.get_current_pose().pose
+        if(bool_print): rospy.logdebug("eef position %s",current_pose)
+        return current_pose
+
+    def srvf_eef_position(self,TriggerRequest):
+        msg = TriggerResponse()
+        current_pose = self.group.get_current_pose().pose
+        msg.message = "position: " + str(current_pose.position) + " orientation: " + str(current_pose.orientation)
+        msg.success = True
+        return msg
 
 
 
