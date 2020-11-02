@@ -118,7 +118,7 @@ class RobotPX():
         self.box_name = "graspObject"
         self.scene.add_box(self.box_name, box_pose, size=(0.025, 0.025, 0.05))
 
-        if(self.wait_for_state_update(objName = self.box_name, box_is_known=True, timeout=10)):
+        if(not self.wait_for_state_update(objName = self.box_name, box_is_known=True, timeout=10)):
             rospy.logerr("ERROR ADDING OBJECT --> "+ self.box_name)
 
 
@@ -130,7 +130,7 @@ class RobotPX():
         box_pose.pose.position.z = -0.025
         self.scene.add_box(objectName, box_pose, size=(2*tableSize, 2*tableSize, tableHeight))
 
-        if(self.wait_for_state_update(objName = objectName, box_is_known=True, timeout=4)):
+        if(not self.wait_for_state_update(objName = objectName, box_is_known=True, timeout=4)):
             rospy.logerr("ERROR ADDING OBJECT -->" + self.box_name)
         
         objectName = "leg1"
@@ -139,7 +139,7 @@ class RobotPX():
         box_pose.pose.position.z = - tableHeight -0.25
         self.scene.add_box(objectName, box_pose, size=(0.025, 0.025, 0.5))
 
-        if(self.wait_for_state_update(objName = objectName, box_is_known=True, timeout=4)):
+        if(not self.wait_for_state_update(objName = objectName, box_is_known=True, timeout=4)):
             rospy.logerr("ERROR ADDING OBJECT -->" + self.box_name)
 
         objectName = "leg2"
@@ -148,7 +148,7 @@ class RobotPX():
         box_pose.pose.position.z = - tableHeight-0.25
         self.scene.add_box(objectName, box_pose, size=(0.025, 0.025, 0.5))
 
-        if(self.wait_for_state_update(objName = objectName, box_is_known=True, timeout=4)):
+        if(not self.wait_for_state_update(objName = objectName, box_is_known=True, timeout=4)):
             rospy.logerr("ERROR ADDING OBJECT -->" + self.box_name)
 
         objectName = "leg3"
@@ -157,7 +157,7 @@ class RobotPX():
         box_pose.pose.position.z = - tableHeight-0.25
         self.scene.add_box(objectName, box_pose, size=(0.025, 0.025, 0.5))
 
-        if(self.wait_for_state_update(objName = objectName, box_is_known=True, timeout=4)):
+        if(not self.wait_for_state_update(objName = objectName, box_is_known=True, timeout=4)):
             rospy.logerr("ERROR ADDING OBJECT -->" + self.box_name)
 
         objectName = "leg4"
@@ -166,7 +166,7 @@ class RobotPX():
         box_pose.pose.position.z = - tableHeight-0.25
         self.scene.add_box(objectName, box_pose, size=(0.025, 0.025, 0.5))
 
-        if(self.wait_for_state_update(objName = objectName, box_is_known=True, timeout=4)):
+        if(not self.wait_for_state_update(objName = objectName, box_is_known=True, timeout=4)):
             rospy.logerr("ERROR ADDING OBJECT -->" + self.box_name)
 
               
@@ -181,7 +181,7 @@ class RobotPX():
             # Test if the box is in attached objects
             attached_objects = self.scene.get_attached_objects([objName])
             is_attached = len(attached_objects.keys()) > 0
-            rospy.logerr("still trying to get the object "+ objName)
+            # rospy.logerr("still trying to get the object "+ objName)
             # Test if the box is in the scene.
             # Note that attaching the box will remove it from known_objects
             is_known = objName in self.scene.get_known_object_names()
