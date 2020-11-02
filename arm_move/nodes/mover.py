@@ -10,6 +10,7 @@ from math import pi
 from std_msgs.msg import String
 from std_srvs.srv import Trigger,TriggerResponse,TriggerRequest
 from moveit_commander.conversions import pose_to_list
+import tf2_ros
 
 class RobotPX():
     def __init__(self):
@@ -62,6 +63,26 @@ class RobotPX():
         self.create_my_scene()
         self.attach_box()
 
+
+        # #move robot up 
+        # # create the broadcaster
+        # broadcaster = tf2_ros.TransformBroadcaster()
+        # # Now create the transform, noted that it must have a parent frame and a timestamp
+        # # The header contains the timing information and frame id
+        # world_base_tf = geometry_msgs.msg.TransformStamped()
+        # world_base_tf.header.stamp = rospy.Time.now()
+        # world_base_tf.header.frame_id = "world"
+        # world_base_tf.child_frame_id = "px100/base_link"
+
+        # # The base frame will be raised in the z direction by 1 meter and be aligned with world
+        # world_base_tf.transform.translation.x = 0
+        # world_base_tf.transform.translation.y = 0
+        # world_base_tf.transform.translation.z = 1
+        # world_base_tf.transform.rotation.x = 0
+        # world_base_tf.transform.rotation.y = 0
+        # world_base_tf.transform.rotation.z = 0
+        # world_base_tf.transform.rotation.w = 1
+        # broadcaster.sendTransform(world_base_tf)
 
     def update(self):
         rate = rospy.Rate(1) # publish freacuancy (DO NOT Change)
@@ -121,56 +142,79 @@ class RobotPX():
         if(not self.wait_for_state_update(objName = self.box_name, box_is_known=True, timeout=10)):
             rospy.logerr("ERROR ADDING OBJECT --> "+ self.box_name)
 
-
-        objectName = "table"
+        
         tableHeight = 0.05
         tableSize = 0.5
+        self.add_table(1,1,"table")
+        leg_size = 0.025
+        self.add_leg([-tableSize +leg_size/2,-tableSize +leg_size/2 ,-tableHeight],0.5,"leg1")
+        self.add_leg([-tableSize +leg_size/2, tableSize -leg_size/2 ,-tableHeight],0.5,"leg2")
+        self.add_leg([ tableSize -leg_size/2,-tableSize +leg_size/2 ,-tableHeight],0.5,"leg3")
+        self.add_leg([ tableSize -leg_size/2, tableSize -leg_size/2 ,-tableHeight],0.5,"leg4")
+
+        # objectName = "leg1"
+        # box_pose.pose.position.x = tableSize
+        # box_pose.pose.position.y = tableSize
+        # box_pose.pose.position.z = - tableHeight -0.25
+        # self.scene.add_box(objectName, box_pose, size=(0.025, 0.025, 0.5))
+
+        # if(not self.wait_for_state_update(objName = objectName, box_is_known=True, timeout=4)):
+        #     rospy.logerr("ERROR ADDING OBJECT -->" + self.box_name)
+
+        # objectName = "leg2"
+        # box_pose.pose.position.x = -tableSize
+        # box_pose.pose.position.y = tableSize
+        # box_pose.pose.position.z = - tableHeight-0.25
+        # self.scene.add_box(objectName, box_pose, size=(0.025, 0.025, 0.5))
+
+        # if(not self.wait_for_state_update(objName = objectName, box_is_known=True, timeout=4)):
+        #     rospy.logerr("ERROR ADDING OBJECT -->" + self.box_name)
+
+        # objectName = "leg3"
+        # box_pose.pose.position.x = tableSize
+        # box_pose.pose.position.y = -tableSize
+        # box_pose.pose.position.z = - tableHeight-0.25
+        # self.scene.add_box(objectName, box_pose, size=(0.025, 0.025, 0.5))
+
+        # if(not self.wait_for_state_update(objName = objectName, box_is_known=True, timeout=4)):
+        #     rospy.logerr("ERROR ADDING OBJECT -->" + self.box_name)
+
+        # objectName = "leg4"
+        # box_pose.pose.position.x = -tableSize
+        # box_pose.pose.position.y = -tableSize
+        # box_pose.pose.position.z = - tableHeight-0.25
+        # self.scene.add_box(objectName, box_pose, size=(0.025, 0.025, 0.5))
+
+        # if(not self.wait_for_state_update(objName = objectName, box_is_known=True, timeout=4)):
+        #     rospy.logerr("ERROR ADDING OBJECT -->" + self.box_name)
+
+              
+    def add_table(self,width,height,name):
+        box_pose = geometry_msgs.msg.PoseStamped()
+        box_pose.header.frame_id = self.robot_name + "/base_link"
+        box_pose.pose.orientation.w = 1.0
         box_pose.pose.position.x = 0.0
         box_pose.pose.position.y = 0.0
         box_pose.pose.position.z = -0.025
-        self.scene.add_box(objectName, box_pose, size=(2*tableSize, 2*tableSize, tableHeight))
+        self.scene.add_box(name, box_pose, size=(width, height, 0.05))
 
-        if(not self.wait_for_state_update(objName = objectName, box_is_known=True, timeout=4)):
-            rospy.logerr("ERROR ADDING OBJECT -->" + self.box_name)
-        
-        objectName = "leg1"
-        box_pose.pose.position.x = tableSize
-        box_pose.pose.position.y = tableSize
-        box_pose.pose.position.z = - tableHeight -0.25
-        self.scene.add_box(objectName, box_pose, size=(0.025, 0.025, 0.5))
+        rospy.logdebug("ADDING OBJECT --> "+ name)
+        if(not self.wait_for_state_update(objName = name, box_is_known=True, timeout=10)):
+            rospy.logerr("ERROR ADDING OBJECT --> "+ name)
 
-        if(not self.wait_for_state_update(objName = objectName, box_is_known=True, timeout=4)):
-            rospy.logerr("ERROR ADDING OBJECT -->" + self.box_name)
+    def add_leg(self,position,length,name):
+        leg_size = 0.025
+        box_pose = geometry_msgs.msg.PoseStamped()
+        box_pose.header.frame_id = self.robot_name + "/base_link"
+        box_pose.pose.orientation.w = 1.0
+        box_pose.pose.position.x = position[0]
+        box_pose.pose.position.y = position[1]
+        box_pose.pose.position.z = position[2] - length/2
+        self.scene.add_box(name, box_pose, size=(leg_size, leg_size, length))
 
-        objectName = "leg2"
-        box_pose.pose.position.x = -tableSize
-        box_pose.pose.position.y = tableSize
-        box_pose.pose.position.z = - tableHeight-0.25
-        self.scene.add_box(objectName, box_pose, size=(0.025, 0.025, 0.5))
-
-        if(not self.wait_for_state_update(objName = objectName, box_is_known=True, timeout=4)):
-            rospy.logerr("ERROR ADDING OBJECT -->" + self.box_name)
-
-        objectName = "leg3"
-        box_pose.pose.position.x = tableSize
-        box_pose.pose.position.y = -tableSize
-        box_pose.pose.position.z = - tableHeight-0.25
-        self.scene.add_box(objectName, box_pose, size=(0.025, 0.025, 0.5))
-
-        if(not self.wait_for_state_update(objName = objectName, box_is_known=True, timeout=4)):
-            rospy.logerr("ERROR ADDING OBJECT -->" + self.box_name)
-
-        objectName = "leg4"
-        box_pose.pose.position.x = -tableSize
-        box_pose.pose.position.y = -tableSize
-        box_pose.pose.position.z = - tableHeight-0.25
-        self.scene.add_box(objectName, box_pose, size=(0.025, 0.025, 0.5))
-
-        if(not self.wait_for_state_update(objName = objectName, box_is_known=True, timeout=4)):
-            rospy.logerr("ERROR ADDING OBJECT -->" + self.box_name)
-
-              
-
+        rospy.logdebug("ADDING OBJECT --> "+ name)
+        if(not self.wait_for_state_update(objName = name, box_is_known=True, timeout=10)):
+            rospy.logerr("ERROR ADDING OBJECT --> "+ name)
 
 
     def wait_for_state_update(self,objName, box_is_known=False, box_is_attached=False, timeout=5):
