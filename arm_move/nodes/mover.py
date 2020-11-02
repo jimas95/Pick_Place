@@ -23,7 +23,7 @@ class RobotPX():
         robot = moveit_commander.RobotCommander()
         scene = moveit_commander.PlanningSceneInterface()
         group_name = "interbotix_arm"
-        group_name = "interbotix_gripper"
+        # group_name = "interbotix_gripper"
         group = moveit_commander.MoveGroupCommander(group_name)
         display_trajectory_publisher = rospy.Publisher("move_group/display_planned_path",
                                                     moveit_msgs.msg.DisplayTrajectory,
@@ -60,6 +60,7 @@ class RobotPX():
 
         #create my scene 
         self.create_my_scene()
+        self.attach_box()
 
 
     def update(self):
@@ -99,6 +100,7 @@ class RobotPX():
     def get_eef_pose(self,bool_print):
         current_pose = self.group.get_current_pose().pose
         if(bool_print): rospy.logdebug("eef position %s",current_pose)
+
         return current_pose
 
     def srvf_eef_position(self,TriggerRequest):
@@ -112,6 +114,7 @@ class RobotPX():
         box_pose = geometry_msgs.msg.PoseStamped()
         box_pose.header.frame_id = self.robot_name + "/base_link"
         box_pose.pose.orientation.w = 1.0
+        box_pose.pose.position.x = 0.6
         self.box_name = "graspObject"
         self.scene.add_box(self.box_name, box_pose, size=(0.025, 0.025, 0.05))
 
@@ -192,6 +195,15 @@ class RobotPX():
 
         # If we exited the while loop without returning then we timed out
         return False
+
+    def attach_box(self):
+
+        grasping_group = 'interbotix_gripper'
+        touch_links = self.robot.get_link_names(group=grasping_group)
+        self.scene.attach_box(self.eef_link, "graspObject", touch_links=touch_links)
+
+        # We wait for the planning scene to update.
+        return self.wait_for_state_update(objName="graspObject",box_is_attached=True, box_is_known=False, timeout=4)
 
 
 
