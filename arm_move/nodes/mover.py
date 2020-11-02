@@ -23,6 +23,7 @@ class RobotPX():
         robot = moveit_commander.RobotCommander()
         scene = moveit_commander.PlanningSceneInterface()
         group_name = "interbotix_arm"
+        group_name = "interbotix_gripper"
         group = moveit_commander.MoveGroupCommander(group_name)
         display_trajectory_publisher = rospy.Publisher("move_group/display_planned_path",
                                                     moveit_msgs.msg.DisplayTrajectory,
@@ -57,13 +58,18 @@ class RobotPX():
         self.srv_joint_state  = rospy.Service('get_joint_states', Trigger, self.srvf_joint_state)
         self.srv_eef_position = rospy.Service('get_eef_pose', Trigger, self.srvf_eef_position)
 
+        #create my scene 
+        self.create_my_scene()
+
 
     def update(self):
         rate = rospy.Rate(1) # publish freacuancy (DO NOT Change)
         while not rospy.is_shutdown():
             rospy.logdebug("Hello!")
             self.print_joint_state()
-            self.get_eef_pose(True)
+            # self.get_eef_pose(True)
+            temp = self.scene.get_known_object_names()
+            rospy.logdebug(temp)
             rate.sleep()
 
     def get_joint_state(self):
@@ -101,6 +107,91 @@ class RobotPX():
         msg.message = "position: " + str(current_pose.position) + " orientation: " + str(current_pose.orientation)
         msg.success = True
         return msg
+
+    def create_my_scene(self):
+        box_pose = geometry_msgs.msg.PoseStamped()
+        box_pose.header.frame_id = self.robot_name + "/base_link"
+        box_pose.pose.orientation.w = 1.0
+        self.box_name = "graspObject"
+        self.scene.add_box(self.box_name, box_pose, size=(0.025, 0.025, 0.05))
+
+        if(self.wait_for_state_update(objName = self.box_name, box_is_known=True, timeout=10)):
+            rospy.logerr("ERROR ADDING OBJECT --> "+ self.box_name)
+
+
+        objectName = "table"
+        tableHeight = 0.05
+        tableSize = 0.5
+        box_pose.pose.position.x = 0.0
+        box_pose.pose.position.y = 0.0
+        box_pose.pose.position.z = -0.025
+        self.scene.add_box(objectName, box_pose, size=(2*tableSize, 2*tableSize, tableHeight))
+
+        if(self.wait_for_state_update(objName = objectName, box_is_known=True, timeout=4)):
+            rospy.logerr("ERROR ADDING OBJECT -->" + self.box_name)
+        
+        objectName = "leg1"
+        box_pose.pose.position.x = tableSize
+        box_pose.pose.position.y = tableSize
+        box_pose.pose.position.z = - tableHeight -0.25
+        self.scene.add_box(objectName, box_pose, size=(0.025, 0.025, 0.5))
+
+        if(self.wait_for_state_update(objName = objectName, box_is_known=True, timeout=4)):
+            rospy.logerr("ERROR ADDING OBJECT -->" + self.box_name)
+
+        objectName = "leg2"
+        box_pose.pose.position.x = -tableSize
+        box_pose.pose.position.y = tableSize
+        box_pose.pose.position.z = - tableHeight-0.25
+        self.scene.add_box(objectName, box_pose, size=(0.025, 0.025, 0.5))
+
+        if(self.wait_for_state_update(objName = objectName, box_is_known=True, timeout=4)):
+            rospy.logerr("ERROR ADDING OBJECT -->" + self.box_name)
+
+        objectName = "leg3"
+        box_pose.pose.position.x = tableSize
+        box_pose.pose.position.y = -tableSize
+        box_pose.pose.position.z = - tableHeight-0.25
+        self.scene.add_box(objectName, box_pose, size=(0.025, 0.025, 0.5))
+
+        if(self.wait_for_state_update(objName = objectName, box_is_known=True, timeout=4)):
+            rospy.logerr("ERROR ADDING OBJECT -->" + self.box_name)
+
+        objectName = "leg4"
+        box_pose.pose.position.x = -tableSize
+        box_pose.pose.position.y = -tableSize
+        box_pose.pose.position.z = - tableHeight-0.25
+        self.scene.add_box(objectName, box_pose, size=(0.025, 0.025, 0.5))
+
+        if(self.wait_for_state_update(objName = objectName, box_is_known=True, timeout=4)):
+            rospy.logerr("ERROR ADDING OBJECT -->" + self.box_name)
+
+              
+
+
+
+    def wait_for_state_update(self,objName, box_is_known=False, box_is_attached=False, timeout=5):
+        
+        start = rospy.get_time()
+        seconds = rospy.get_time()
+        while (seconds - start < timeout) and not rospy.is_shutdown():
+            # Test if the box is in attached objects
+            attached_objects = self.scene.get_attached_objects([objName])
+            is_attached = len(attached_objects.keys()) > 0
+            rospy.logerr("still trying to get the object "+ objName)
+            # Test if the box is in the scene.
+            # Note that attaching the box will remove it from known_objects
+            is_known = objName in self.scene.get_known_object_names()
+            # Test if we are in the expected state
+            if (box_is_attached == is_attached) and (box_is_known == is_known):
+                return True
+
+            # Sleep so that we give other threads time on the processor
+            rospy.sleep(0.1)
+            seconds = rospy.get_time()
+
+        # If we exited the while loop without returning then we timed out
+        return False
 
 
 
