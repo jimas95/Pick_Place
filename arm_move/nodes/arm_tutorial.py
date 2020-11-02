@@ -39,8 +39,7 @@ class MoveGroupPythonIntefaceTutorial(object):
     def __init__(self):
         super(MoveGroupPythonIntefaceTutorial, self).__init__()
         moveit_commander.roscpp_initialize(sys.argv)
-        rospy.init_node('move_group_python_interface_tutorial',
-                        anonymous=True,log_level=rospy.DEBUG)
+        rospy.init_node('move_group_python_interface_tutorial',anonymous=True,log_level=rospy.DEBUG)
 
         robot_name = rospy.get_param("~robot_name")
         self.robot_name = robot_name
