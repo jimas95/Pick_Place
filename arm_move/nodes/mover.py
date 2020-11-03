@@ -10,6 +10,7 @@ from math import pi
 from std_msgs.msg import String
 from std_srvs.srv import Trigger,TriggerResponse,TriggerRequest,Empty,EmptyRequest,EmptyResponse
 from moveit_commander.conversions import pose_to_list
+from arm_move.srv import step_srv,step_srvResponse,step_srvRequest
 import tf2_ros
 
 class RobotPX():
@@ -61,6 +62,7 @@ class RobotPX():
         self.srv_pathPlan = rospy.Service('pathPlan', Empty, self.srvf_pathPlan)
         self.srv_execute_plan = rospy.Service('execute_plan', Empty, self.srvf_execute_plan)
         self.srv_reset = rospy.Service('reset', Empty, self.srvf_reset)
+        self.srv_step = rospy.Service('step', step_srv, self.srvf_step)
 
         #create my scene 
         self.create_my_scene()
@@ -70,10 +72,9 @@ class RobotPX():
         rate = rospy.Rate(1) # publish freacuancy (DO NOT Change)
         while not rospy.is_shutdown():
             rospy.logdebug("Hello!")
-            self.print_joint_state()
+            # self.print_joint_state()
             self.get_eef_pose(True)
-            temp = self.scene.get_known_object_names()
-            rospy.logdebug(temp)
+
             rate.sleep()
 
     def get_joint_state(self):
@@ -230,7 +231,7 @@ class RobotPX():
         is_known = obj_name in self.scene.get_known_object_names()
         return is_known
 
-    def plan_cartesian_path(self, scale=1):
+    def plan_cartesian_path(self):
         waypoints = []
         wpose = self.group.get_current_pose().pose
         waypoints.append(copy.deepcopy(wpose))
@@ -254,7 +255,7 @@ class RobotPX():
         # translation.  We will disable the jump threshold by setting it to 0.0 disabling:
         (plan, fraction) = self.group.compute_cartesian_path(
                                         waypoints,   # waypoints to follow
-                                        0.01,        # eef_step
+                                        0.005,        # eef_step
                                         0.0)         # jump_threshold
 
         # Note: We are just planning, not asking move_group to actually move the robot yet:
@@ -275,10 +276,81 @@ class RobotPX():
         # self.display_trajectory(plan)
         return EmptyResponse()
 
+
+    def srvf_step(self,step_srvRequest):
+        rospy.logerr(step_srvRequest)
+        msg = step_srvResponse()
+
+        self.group.set_pose_target(step_srvRequest.pose)
+        plan = self.group.plan()
+        msg.ErrorCode = plan[3]
+        rospy.logerr(plan[0])
+        rospy.logerr(plan[1])
+        rospy.logerr(plan[2])
+        rospy.logerr(plan[3])
+        if(not plan[0]): 
+            rospy.logerr("ERROR")
+            rospy.logerr("ERROR")
+            # msg.ErrorCode = 
+            return msg
+
+        self.group.execute(plan[1], wait=True)
+
+        return msg
+
     def srvf_execute_plan(self,EmptyRequest):
-        rospy.logdebug("Executing path")
-        self.group.execute(self.plan, wait=True)
-        rospy.logdebug("path DONE")
+        # rospy.logdebug("Executing path")
+        # self.group.execute(self.plan, wait=True)
+        # rospy.logdebug("path DONE")
+
+
+        wpose = self.group.get_current_pose().pose
+        homePose = self.group.get_current_pose().pose
+        # wpose.position.x= 0.12551517150364047
+        # wpose.position.y= -0.006552229785396738
+        # wpose.position.z= -0.1012197766621168
+        # wpose.orientation.x= 0.01761418643272797
+        # wpose.orientation.y= 0.6752976881272681
+        # wpose.orientation.z= -0.019225800746807322
+        # wpose.orientation.w= 0.7370842159698743
+
+        wpose.position.x= 0.1643906955169384
+        wpose.position.y= -0.10445289507566019
+        wpose.position.z= -0.047678046515300956
+        wpose.orientation.x= 0.16583621238636376
+        wpose.orientation.y= 0.5702242605710163
+        wpose.orientation.z= -0.22468289165402622
+        wpose.orientation.w= 0.7725673054922578
+
+
+        self.group.set_pose_target(wpose)
+        
+        plan = self.group.plan()
+        if(not plan[0]): 
+            rospy.logerr("ERROR")
+            rospy.logerr("ERROR")
+            return EmptyResponse()
+
+        self.group.execute(plan[1], wait=True)
+        self.attach_box()
+        
+        wpose.position.x= 0.13860742808155985
+        wpose.position.y= 0.10579530419250659
+        wpose.position.z= -0.07085365136810226 
+        wpose.orientation.x= -0.21704664452782363
+        wpose.orientation.y= 0.6420942506314087
+        wpose.orientation.z= 0.23545103789794905
+        wpose.orientation.w= 0.696540405258791
+        self.group.set_pose_target(wpose)
+        
+        plan = self.group.plan()
+        if(not plan[0]): 
+            rospy.logerr("ERROR")
+            rospy.logerr("ERROR")
+            return EmptyResponse()
+        self.group.execute(plan[1], wait=True)
+
+
         return EmptyResponse()
     
     def srvf_reset(self,EmptyRequest):
