@@ -64,7 +64,7 @@ class RobotPX():
 
         #create my scene 
         self.create_my_scene()
-        self.attach_box()
+        self.srvf_reset(EmptyRequest)
 
     def update(self):
         rate = rospy.Rate(1) # publish freacuancy (DO NOT Change)
@@ -112,19 +112,7 @@ class RobotPX():
         msg.success = True
         return msg
 
-    def create_my_scene(self):
-        box_pose = geometry_msgs.msg.PoseStamped()
-        box_pose.header.frame_id = self.robot_name + "/base_link"
-        box_pose.pose.orientation.w = 1.0
-        box_pose.pose.position.x = 0.6
-        self.box_name = "graspObject"
-        self.scene.add_box(self.box_name, box_pose, size=(0.025, 0.025, 0.05))
-
-        if(not self.wait_for_state_update(objName = self.box_name, box_is_known=True, timeout=10)):
-            rospy.logerr("ERROR ADDING OBJECT --> "+ self.box_name)
-
-
-        
+    def create_my_scene(self):  
         tableHeight = 0.05
         tableSize = 0.5
         table1_position = [-0.1,0,0]
@@ -174,6 +162,32 @@ class RobotPX():
         if(not self.wait_for_state_update(objName = name, box_is_known=True, timeout=10)):
             rospy.logerr("ERROR ADDING OBJECT --> "+ name)
 
+    def add_graspObject(self):
+        box_pose = geometry_msgs.msg.PoseStamped()
+        box_pose.header.frame_id = self.robot_name + "/base_link"
+        box_pose.pose.orientation.w = 1.0
+        box_pose.pose.position.x = 0.2
+        box_pose.pose.position.y = -0.12
+        box_pose.pose.position.z = -0.25 + 0.15
+        self.box_name = "graspObject"
+        self.scene.add_box(self.box_name, box_pose, size=(0.025, 0.025, 0.15))
+
+        if(not self.wait_for_state_update(objName = self.box_name, box_is_known=True, timeout=10)):
+            rospy.logerr("ERROR ADDING OBJECT --> "+ self.box_name)
+
+    def add_obstacle(self):
+        box_pose = geometry_msgs.msg.PoseStamped()
+        box_pose.header.frame_id = self.robot_name + "/base_link"
+        box_pose.pose.orientation.w = 1.0
+        box_pose.pose.position.x = 0.2
+        box_pose.pose.position.y = 0.0
+        box_pose.pose.position.z = -0.25 + 0.09
+        self.box_name = "obstacle"
+        self.scene.add_box(self.box_name, box_pose, size=(0.14, 0.05,0.09))
+
+        if(not self.wait_for_state_update(objName = self.box_name, box_is_known=True, timeout=10)):
+            rospy.logerr("ERROR ADDING OBJECT --> "+ self.box_name)
+       
 
     def wait_for_state_update(self,objName, box_is_known=False, box_is_attached=False, timeout=5):
         
@@ -208,7 +222,7 @@ class RobotPX():
         self.scene.remove_attached_object(self.eef_link, name=obj_name)
         return self.wait_for_state_update(obj_name,box_is_known=True, box_is_attached=False, timeout=4)
 
-    def remove_box(self,obj_name):
+    def remove_obj(self,obj_name):
         self.scene.remove_world_object(obj_name)
         return self.wait_for_state_update(obj_name,box_is_attached=False, box_is_known=False, timeout=4)
 
@@ -268,6 +282,23 @@ class RobotPX():
         return EmptyResponse()
 
     def srvf_reset(self,EmptyRequest):
+
+        # check if object exists 
+        # then delete 
+        # then add it 
+        # add obstacle box 
+        # add grapsp object 
+
+        res = self.object_exists("obstacle")
+        if(res):
+            self.remove_obj("obstacle")
+        self.add_obstacle()
+
+        res = self.object_exists("graspObject")
+        if(res):
+            self.remove_obj("graspObject")
+        self.add_graspObject()
+
 
         return EmptyResponse()
 
