@@ -66,6 +66,7 @@ class RobotPX():
         self.srv_reset = rospy.Service('reset', Empty, self.srvf_reset)
         self.srv_saveWaypoints = rospy.Service('saveWaypoints', Empty, self.srvf_saveWaypoints)
         self.srv_clearWaypoints = rospy.Service('clearWaypoints', Empty, self.srvf_clearWaypoints)
+        self.srv_follow = rospy.Service('follow', Empty, self.srvf_follow)
         self.srv_step = rospy.Service('step', step_srv, self.srvf_step)
 
         #create my scene 
@@ -76,10 +77,9 @@ class RobotPX():
         data = rospy.get_param("/points")
         temp_list = list(data.items())
         self.waypoints = []
-        rospy.logerr(temp_list)
-        waypoint = step_srvRequest()
         for item in temp_list:
             point = item[1]
+            waypoint = step_srvRequest()
             waypoint.pose.position.x = point[0]
             waypoint.pose.position.y = point[1]
             waypoint.pose.position.z = point[2]
@@ -87,20 +87,21 @@ class RobotPX():
             waypoint.pose.orientation.y = point[4]
             waypoint.pose.orientation.z = point[5]
             waypoint.pose.orientation.w = point[6]
+
             if(point[7]==1):
                 waypoint.gripper =True
             else:
-                waypoint.gripper =True
+                waypoint.gripper =False
+
             self.waypoints.append(waypoint)
-        rospy.logerr(self.waypoints)
 
     def update(self):
         rate = rospy.Rate(1) # publish freacuancy (DO NOT Change)
         while not rospy.is_shutdown():
-            rospy.logdebug("Hello!")
+            # rospy.logdebug("Hello!")
             # self.print_joint_state()
-            self.get_eef_pose(True)
-
+            # self.get_eef_pose(True)
+            # rospy.logdebug(self.group_gripper.get_current_joint_values())
             rate.sleep()
 
     def get_joint_state(self):
@@ -326,6 +327,41 @@ class RobotPX():
         self.waypoints.append(step_srvRequest)
         self.srvf_saveWaypoints(EmptyRequest)
         return msg
+
+    def srvf_follow(self,EmptyRequest):
+
+        for point in self.waypoints:
+            
+            rospy.logdebug(point)
+            self.group.set_pose_target(point.pose)
+            plan = self.group.plan()
+
+            if(not plan[0]): 
+                rospy.logerr("ERROR path plan NOT FOUND")
+                return EmptyResponse()
+
+            self.group.execute(plan[1], wait=True)
+
+            if(point.gripper):
+                joint_goal = self.group_gripper.get_current_joint_values()
+                # joint_goal[0] = 0.0165
+                # joint_goal[1] = -0.0165
+                joint_goal[0] = 0.022
+                joint_goal[1] = -0.022
+                # self.group_gripper.set_named_target("Home")
+                self.group_gripper.go(joint_goal,wait=True)
+                self.attach_box()
+            else:
+                joint_goal = self.group_gripper.get_current_joint_values()
+                joint_goal[0] = 0.035
+                joint_goal[1] = -0.035
+                # self.group_gripper.set_named_target("Open")
+                self.group_gripper.go(joint_goal,wait=True)
+                self.detach_box("graspObject")
+
+        return EmptyResponse()
+
+
 
     def srvf_execute_plan(self,EmptyRequest):
         # rospy.logdebug("Executing path")

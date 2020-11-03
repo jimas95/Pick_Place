@@ -23,7 +23,7 @@
     <arg name="dof"                       value="4"/>
   </include>
 
-    <rosparam command="load" file="$(find arm_move)/config/waypoints.yaml" arg="/sakis" />
+    <rosparam command="load" file="$(find arm_move)/config/waypoints.yaml"/>
 <!-- <rosparam command="load" file="$(find arm_move)/config/waypoints.yaml" /> -->
     
   <node if="$(arg use_python_interface)"
