@@ -8,7 +8,7 @@ import moveit_msgs.msg
 import geometry_msgs.msg
 from math import pi
 from std_msgs.msg import String
-from std_srvs.srv import Trigger,TriggerResponse,TriggerRequest
+from std_srvs.srv import Trigger,TriggerResponse,TriggerRequest,Empty,EmptyRequest,EmptyResponse
 from moveit_commander.conversions import pose_to_list
 import tf2_ros
 
@@ -58,6 +58,9 @@ class RobotPX():
         #create services 
         self.srv_joint_state  = rospy.Service('get_joint_states', Trigger, self.srvf_joint_state)
         self.srv_eef_position = rospy.Service('get_eef_pose', Trigger, self.srvf_eef_position)
+        self.srv_pathPlan = rospy.Service('pathPlan', Empty, self.srvf_pathPlan)
+        self.srv_execute_plan = rospy.Service('execute_plan', Empty, self.srvf_execute_plan)
+        self.srv_reset = rospy.Service('reset', Empty, self.srvf_reset)
 
         #create my scene 
         self.create_my_scene()
@@ -89,7 +92,7 @@ class RobotPX():
         while not rospy.is_shutdown():
             rospy.logdebug("Hello!")
             self.print_joint_state()
-            # self.get_eef_pose(True)
+            self.get_eef_pose(True)
             temp = self.scene.get_known_object_names()
             rospy.logdebug(temp)
             rate.sleep()
@@ -227,6 +230,60 @@ class RobotPX():
         return self.wait_for_state_update(objName="graspObject",box_is_attached=True, box_is_known=False, timeout=4)
 
 
+    def plan_cartesian_path(self, scale=1):
+        waypoints = []
+        wpose = self.group.get_current_pose().pose
+        waypoints.append(copy.deepcopy(wpose))
+        wpose.position.x =  0.12
+        wpose.position.y =  0.0
+        wpose.position.z = -0.1
+        waypoints.append(copy.deepcopy(wpose))
+
+        wpose.position.x =  0.16
+        wpose.position.y =  0.0
+        wpose.position.z =  0.044
+        waypoints.append(copy.deepcopy(wpose))
+
+        wpose.position.x =  0.19
+        wpose.position.y =  0.0
+        wpose.position.z =  0.15
+        waypoints.append(copy.deepcopy(wpose))
+
+        # We want the Cartesian path to be interpolated at a resolution of 1 cm
+        # which is why we will specify 0.01 as the eef_step in Cartesian
+        # translation.  We will disable the jump threshold by setting it to 0.0 disabling:
+        (plan, fraction) = self.group.compute_cartesian_path(
+                                        waypoints,   # waypoints to follow
+                                        0.01,        # eef_step
+                                        0.0)         # jump_threshold
+
+        # Note: We are just planning, not asking move_group to actually move the robot yet:
+        return plan, fraction
+
+    def display_trajectory(self, plan):
+        robot = self.robot
+        display_trajectory_publisher = self.display_trajectory_publisher
+        display_trajectory = moveit_msgs.msg.DisplayTrajectory()
+        display_trajectory.trajectory_start = robot.get_current_state()
+        display_trajectory.trajectory.append(plan)
+        display_trajectory_publisher.publish(display_trajectory)
+
+    def srvf_pathPlan(self,EmptyRequest):
+        rospy.logdebug("Finding path")
+        self.plan, fraction = self.plan_cartesian_path()
+        rospy.logdebug("path FOUND")
+        # self.display_trajectory(plan)
+        return EmptyResponse()
+
+    def srvf_execute_plan(self,EmptyRequest):
+        rospy.logdebug("Executing path")
+        self.group.execute(self.plan, wait=True)
+        rospy.logdebug("path DONE")
+        return EmptyResponse()
+
+    def srvf_reset(self,EmptyRequest):
+
+        return EmptyResponse()
 
 
 if __name__ == '__main__':
