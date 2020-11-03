@@ -66,27 +66,6 @@ class RobotPX():
         self.create_my_scene()
         self.attach_box()
 
-
-        # #move robot up 
-        # # create the broadcaster
-        # broadcaster = tf2_ros.TransformBroadcaster()
-        # # Now create the transform, noted that it must have a parent frame and a timestamp
-        # # The header contains the timing information and frame id
-        # world_base_tf = geometry_msgs.msg.TransformStamped()
-        # world_base_tf.header.stamp = rospy.Time.now()
-        # world_base_tf.header.frame_id = "world"
-        # world_base_tf.child_frame_id = "px100/base_link"
-
-        # # The base frame will be raised in the z direction by 1 meter and be aligned with world
-        # world_base_tf.transform.translation.x = 0
-        # world_base_tf.transform.translation.y = 0
-        # world_base_tf.transform.translation.z = 1
-        # world_base_tf.transform.rotation.x = 0
-        # world_base_tf.transform.rotation.y = 0
-        # world_base_tf.transform.rotation.z = 0
-        # world_base_tf.transform.rotation.w = 1
-        # broadcaster.sendTransform(world_base_tf)
-
     def update(self):
         rate = rospy.Rate(1) # publish freacuancy (DO NOT Change)
         while not rospy.is_shutdown():
@@ -124,7 +103,6 @@ class RobotPX():
     def get_eef_pose(self,bool_print):
         current_pose = self.group.get_current_pose().pose
         if(bool_print): rospy.logdebug("eef position %s",current_pose)
-
         return current_pose
 
     def srvf_eef_position(self,TriggerRequest):
@@ -221,14 +199,22 @@ class RobotPX():
         return False
 
     def attach_box(self):
-
         grasping_group = 'interbotix_gripper'
         touch_links = self.robot.get_link_names(group=grasping_group)
         self.scene.attach_box(self.eef_link, "graspObject", touch_links=touch_links)
-
-        # We wait for the planning scene to update.
         return self.wait_for_state_update(objName="graspObject",box_is_attached=True, box_is_known=False, timeout=4)
 
+    def detach_box(self,obj_name):
+        self.scene.remove_attached_object(self.eef_link, name=obj_name)
+        return self.wait_for_state_update(obj_name,box_is_known=True, box_is_attached=False, timeout=4)
+
+    def remove_box(self,obj_name):
+        self.scene.remove_world_object(obj_name)
+        return self.wait_for_state_update(obj_name,box_is_attached=False, box_is_known=False, timeout=4)
+
+    def object_exists(self,obj_name):
+        is_known = obj_name in self.scene.get_known_object_names()
+        return is_known
 
     def plan_cartesian_path(self, scale=1):
         waypoints = []
