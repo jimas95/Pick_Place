@@ -62,7 +62,6 @@ class RobotPX():
         self.srv_joint_state  = rospy.Service('get_joint_states', Trigger, self.srvf_joint_state)
         self.srv_eef_position = rospy.Service('get_eef_pose', Trigger, self.srvf_eef_position)
         self.srv_pathPlan = rospy.Service('pathPlan', Empty, self.srvf_pathPlan)
-        self.srv_execute_plan = rospy.Service('execute_plan', Empty, self.srvf_execute_plan)
         self.srv_reset = rospy.Service('reset', Empty, self.srvf_reset)
         self.srv_saveWaypoints = rospy.Service('saveWaypoints', Empty, self.srvf_saveWaypoints)
         self.srv_clearWaypoints = rospy.Service('clearWaypoints', Empty, self.srvf_clearWaypoints)
@@ -94,19 +93,29 @@ class RobotPX():
                 waypoint.gripper =False
 
             self.waypoints.append(waypoint)
-
+    """
+    main update loop
+    does not do much only debuging mesagges
+    everything is being executed and controled using services
+    """
     def update(self):
-        rate = rospy.Rate(1) # publish freacuancy (DO NOT Change)
+        rate = rospy.Rate(1) # publish freacuancy 
         while not rospy.is_shutdown():
             # rospy.logdebug("Hello!")
-            # self.print_joint_state()
-            # self.get_eef_pose(True)
-            # rospy.logdebug(self.group_gripper.get_current_joint_values())
+            self.print_joint_state()
+            self.get_eef_pose(True)
+            rospy.logdebug(self.group_gripper.get_current_joint_values())
             rate.sleep()
 
+    """
+    return the current joint values 
+    """
     def get_joint_state(self):
         return self.group.get_current_joint_values()
     
+    """
+    print all the current joint values 
+    """
     def print_joint_state(self):
         joint_state = self.group.get_current_joint_values()
         i=0
@@ -115,31 +124,22 @@ class RobotPX():
             i+=1
         rospy.logdebug("------")
 
-    def srvf_joint_state(self,TriggerRequest):
-        joint_state = self.get_joint_state()
-        data = ""
-        i=0
-        for joint in joint_state: 
-            data+= "joint " + str(i) + ": " + str(joint*180/pi) + "\n"
-            i+=1
-        msg = TriggerResponse()
-        msg.message = str(joint_state)
-        msg.success = True
-        return msg
 
-
+    """
+    return the current eef position based an world frame
+    setting input bool to true will print the value
+    """
     def get_eef_pose(self,bool_print):
         current_pose = self.group.get_current_pose().pose
         if(bool_print): rospy.logdebug("eef position %s",current_pose)
         return current_pose
 
-    def srvf_eef_position(self,TriggerRequest):
-        msg = TriggerResponse()
-        current_pose = self.group.get_current_pose().pose
-        msg.message = "position: " + str(current_pose.position) + " orientation: " + str(current_pose.orientation)
-        msg.success = True
-        return msg
+# ************************************ functions handling scene objects  *************************************
 
+    """
+    create our scene setup 
+    2 tables table2 is on table1 each table has its own legs
+    """
     def create_my_scene(self):  
         tableHeight = 0.05
         tableSize = 0.5
@@ -162,7 +162,9 @@ class RobotPX():
         self.add_leg([ tableSize/2 -leg_size/2, tableSize -leg_size/2 ,-tableHeight+table2_position[2]],0.5,"leg4")
 
 
-              
+    """
+    add a "table" at out scene 
+    """    
     def add_table(self,width,height,position,name):
         box_pose = geometry_msgs.msg.PoseStamped()
         box_pose.header.frame_id = self.robot_name + "/base_link"
@@ -176,6 +178,9 @@ class RobotPX():
         if(not self.wait_for_state_update(objName = name, box_is_known=True, timeout=10)):
             rospy.logerr("ERROR ADDING OBJECT --> "+ name)
 
+    """
+    add leg(streched box) object
+    """
     def add_leg(self,position,length,name):
         leg_size = 0.025
         box_pose = geometry_msgs.msg.PoseStamped()
@@ -190,6 +195,9 @@ class RobotPX():
         if(not self.wait_for_state_update(objName = name, box_is_known=True, timeout=10)):
             rospy.logerr("ERROR ADDING OBJECT --> "+ name)
 
+    """
+    add a box that will be our grasping object at the scene
+    """
     def add_graspObject(self):
         box_pose = geometry_msgs.msg.PoseStamped()
         box_pose.header.frame_id = self.robot_name + "/base_link"
@@ -203,6 +211,9 @@ class RobotPX():
         if(not self.wait_for_state_update(objName = self.box_name, box_is_known=True, timeout=10)):
             rospy.logerr("ERROR ADDING OBJECT --> "+ self.box_name)
 
+    """
+    add realSense sense object(box) as an obstacle
+    """
     def add_obstacle(self):
         box_pose = geometry_msgs.msg.PoseStamped()
         box_pose.header.frame_id = self.robot_name + "/base_link"
@@ -216,7 +227,9 @@ class RobotPX():
         if(not self.wait_for_state_update(objName = self.box_name, box_is_known=True, timeout=10)):
             rospy.logerr("ERROR ADDING OBJECT --> "+ self.box_name)
        
-
+    """
+    wait function to be sure that an object has been added to our scene before continue
+    """
     def wait_for_state_update(self,objName, box_is_known=False, box_is_attached=False, timeout=5):
         
         start = rospy.get_time()
@@ -240,24 +253,40 @@ class RobotPX():
         # If we exited the while loop without returning then we timed out
         return False
 
+    """
+    attach the graspObject to eef robot
+    """
     def attach_box(self):
         grasping_group = 'interbotix_gripper'
         touch_links = self.robot.get_link_names(group=grasping_group)
         self.scene.attach_box(self.eef_link, "graspObject", touch_links=touch_links)
         return self.wait_for_state_update(objName="graspObject",box_is_attached=True, box_is_known=False, timeout=4)
 
+    """
+    detach object named obj_name from eeo
+    """
     def detach_box(self,obj_name):
         self.scene.remove_attached_object(self.eef_link, name=obj_name)
         return self.wait_for_state_update(obj_name,box_is_known=True, box_is_attached=False, timeout=4)
 
+    """
+    remove obj_name from scence
+    """
     def remove_obj(self,obj_name):
         self.scene.remove_world_object(obj_name)
         return self.wait_for_state_update(obj_name,box_is_attached=False, box_is_known=False, timeout=4)
 
+    """
+    return a boolean if an obj_name exists in already in the scene
+    """
     def object_exists(self,obj_name):
         is_known = obj_name in self.scene.get_known_object_names()
         return is_known
 
+    """
+    find a series of points(plan) for predifined goal state 
+    using group.compute_cartesian_path
+    """
     def plan_cartesian_path(self):
         waypoints = []
         wpose = self.group.get_current_pose().pose
@@ -288,6 +317,8 @@ class RobotPX():
         # Note: We are just planning, not asking move_group to actually move the robot yet:
         return plan, fraction
 
+    """display a trajectory path virtualy, (does not move the robot)
+    """
     def display_trajectory(self, plan):
         robot = self.robot
         display_trajectory_publisher = self.display_trajectory_publisher
@@ -296,6 +327,37 @@ class RobotPX():
         display_trajectory.trajectory.append(plan)
         display_trajectory_publisher.publish(display_trajectory)
 
+# ************************************** SERVICES ***************************************
+
+    """
+    Service 
+    returns a string msg with all the current joint values
+    """
+    def srvf_joint_state(self,TriggerRequest):
+        joint_state = self.get_joint_state()
+        data = ""
+        i=0
+        for joint in joint_state: 
+            data+= "joint " + str(i) + ": " + str(joint*180/pi) + "\n"
+            i+=1
+        msg = TriggerResponse()
+        msg.message = str(joint_state)
+        msg.success = True
+        return msg
+
+    """
+    Service 
+    returns the curren eef postion relative to the world frame
+    """
+    def srvf_eef_position(self,TriggerRequest):
+        msg = TriggerResponse()
+        current_pose = self.group.get_current_pose().pose
+        msg.message = "position: " + str(current_pose.position) + " orientation: " + str(current_pose.orientation)
+        msg.success = True
+        return msg
+
+    """Service computes a pre defined cartesian path
+    """
     def srvf_pathPlan(self,EmptyRequest):
         rospy.logdebug("Finding path")
         self.plan, fraction = self.plan_cartesian_path()
@@ -303,7 +365,10 @@ class RobotPX():
         # self.display_trajectory(plan)
         return EmptyResponse()
 
-
+    """Service step
+    has an inpute of step_srvRequest (pose,bool open/close gripper)
+    if path found exucute and store it in parameter server under the /waypoint namespace
+    """
     def srvf_step(self,step_srvRequest):
         msg = step_srvResponse()
 
@@ -328,6 +393,10 @@ class RobotPX():
         self.srvf_saveWaypoints(EmptyRequest)
         return msg
 
+    """ 
+    SERVICE follow
+    iterates all the waypoints and executes them one by one 
+    """
     def srvf_follow(self,EmptyRequest):
 
         for point in self.waypoints:
@@ -358,68 +427,13 @@ class RobotPX():
                 # self.group_gripper.set_named_target("Open")
                 self.group_gripper.go(joint_goal,wait=True)
                 self.detach_box("graspObject")
-
         return EmptyResponse()
 
 
-
-    def srvf_execute_plan(self,EmptyRequest):
-        # rospy.logdebug("Executing path")
-        # self.group.execute(self.plan, wait=True)
-        # rospy.logdebug("path DONE")
-
-
-        wpose = self.group.get_current_pose().pose
-        homePose = self.group.get_current_pose().pose
-
-
-        wpose.position.x= 0.1643906955169384
-        wpose.position.y= -0.10445289507566019
-        wpose.position.z= -0.047678046515300956
-        wpose.orientation.x= 0.16583621238636376
-        wpose.orientation.y= 0.5702242605710163
-        wpose.orientation.z= -0.22468289165402622
-        wpose.orientation.w= 0.7725673054922578
-
-
-        self.group.set_pose_target(wpose)
-        
-        plan = self.group.plan()
-        if(not plan[0]): 
-            rospy.logerr("ERROR")
-            rospy.logerr("ERROR")
-            return EmptyResponse()
-
-        self.group.execute(plan[1], wait=True)
-        self.attach_box()
-        
-        wpose.position.x= 0.13860742808155985
-        wpose.position.y= 0.10579530419250659
-        wpose.position.z= -0.07085365136810226 
-        wpose.orientation.x= -0.21704664452782363
-        wpose.orientation.y= 0.6420942506314087
-        wpose.orientation.z= 0.23545103789794905
-        wpose.orientation.w= 0.696540405258791
-        self.group.set_pose_target(wpose)
-        
-        plan = self.group.plan()
-        if(not plan[0]): 
-            rospy.logerr("ERROR")
-            rospy.logerr("ERROR")
-            return EmptyResponse()
-        self.group.execute(plan[1], wait=True)
-
-
-        return EmptyResponse()
-    
+    """SERVICE reset
+    Reset scene, delete/create obstacle,grasping obstacle set home robot position
+    """
     def srvf_reset(self,EmptyRequest):
-
-        # check if object exists 
-        # then delete 
-        # then add it 
-        # add obstacle box 
-        # add grapsp object 
-
         res = self.object_exists("obstacle")
         if(res):
             self.remove_obj("obstacle")
@@ -432,10 +446,12 @@ class RobotPX():
 
         self.group.set_named_target("Home")
         self.group.go()
-
-
         return EmptyResponse()
 
+    """SERVICE saveWaypoints
+    update points in parameters server based 
+    on waypoints
+    """
     def srvf_saveWaypoints(self,EmptyRequest):
         finalList = []
         i=0
@@ -456,14 +472,19 @@ class RobotPX():
 
             rospy.set_param("/waypoints/points/pt"+str(i),tempList)
             i+=1
-        rospy.logerr("sadfsgfeswrgergergre")
         return EmptyResponse()
 
+    """SERVICE clearWaypoints
+    Reset waypoints list and parameters
+    """
     def srvf_clearWaypoints(self,EmptyRequest):
         self.waypoints = []
         self.srvf_saveWaypoints(EmptyRequest)
         return EmptyResponse()
 
+"""
+creates object of class and calls main loop 
+"""
 if __name__ == '__main__':
     try:
         robot = RobotPX()
