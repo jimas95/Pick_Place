@@ -25,11 +25,27 @@ class RobotPX():
         robot = moveit_commander.RobotCommander()
         scene = moveit_commander.PlanningSceneInterface()
         group_name = "interbotix_arm"
-        # group_name = "interbotix_gripper"
+        
         group = moveit_commander.MoveGroupCommander(group_name)
+        group_gripper_name = "interbotix_gripper"
+        group_gripper = moveit_commander.MoveGroupCommander(group_gripper_name)
         display_trajectory_publisher = rospy.Publisher("move_group/display_planned_path",
                                                     moveit_msgs.msg.DisplayTrajectory,
                                                     queue_size=20)
+
+        ## Getting Basic Information
+        planning_frame = group.get_planning_frame()
+        print( "============ Reference frame: %s" % planning_frame)
+
+        eef_link = group.get_end_effector_link()
+        print( "============ End effector: %s" % eef_link)
+
+        group_names = robot.get_group_names()
+        print( "============ Robot Groups:", robot.get_group_names())
+
+        print( "============ print(ing robot state")
+        print( robot.get_current_state())
+        print( "")
 
 
         # Misc variables
@@ -37,6 +53,7 @@ class RobotPX():
         self.robot = robot
         self.scene = scene
         self.group = group
+        self.group_gripper = group_gripper
         self.display_trajectory_publisher = display_trajectory_publisher
         self.planning_frame = planning_frame
         self.eef_link = eef_link
@@ -281,6 +298,13 @@ class RobotPX():
             return msg
 
         self.group.execute(plan[1], wait=True)
+
+        if(step_srvRequest.gripper):
+            self.group_gripper.set_named_target("Home")
+            self.group_gripper.go(wait=True)
+        else:
+            self.group_gripper.set_named_target("Open")
+            self.group_gripper.go(wait=True)
 
         return msg
 
