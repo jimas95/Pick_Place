@@ -14,6 +14,7 @@ roslaunch interbotix_moveit_interface moveit_interface.launch robot_name:=px100 
 
 roslaunch arm_move arm_box.launch robot_name:=px100 use_python_interface:=True use_actual:=True 
 roslaunch arm_move arm_box.launch use_python_interface:=True use_fake:=True 
+roslaunch arm_move arm_box.launch use_python_interface:=True use_actual:=True 
 
 open at gazebo :
 roslaunch interbotix_gazebo gazebo.launch robot_name:=px100 
