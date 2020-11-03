@@ -58,18 +58,41 @@ class RobotPX():
         self.planning_frame = planning_frame
         self.eef_link = eef_link
         self.group_names = group_names
-
         #create services 
         self.srv_joint_state  = rospy.Service('get_joint_states', Trigger, self.srvf_joint_state)
         self.srv_eef_position = rospy.Service('get_eef_pose', Trigger, self.srvf_eef_position)
         self.srv_pathPlan = rospy.Service('pathPlan', Empty, self.srvf_pathPlan)
         self.srv_execute_plan = rospy.Service('execute_plan', Empty, self.srvf_execute_plan)
         self.srv_reset = rospy.Service('reset', Empty, self.srvf_reset)
+        self.srv_saveWaypoints = rospy.Service('saveWaypoints', Empty, self.srvf_saveWaypoints)
+        self.srv_clearWaypoints = rospy.Service('clearWaypoints', Empty, self.srvf_clearWaypoints)
         self.srv_step = rospy.Service('step', step_srv, self.srvf_step)
 
         #create my scene 
         self.create_my_scene()
         self.srvf_reset(EmptyRequest)
+
+        #load waypoints
+        data = rospy.get_param("/points")
+        temp_list = list(data.items())
+        self.waypoints = []
+        rospy.logerr(temp_list)
+        waypoint = step_srvRequest()
+        for item in temp_list:
+            point = item[1]
+            waypoint.pose.position.x = point[0]
+            waypoint.pose.position.y = point[1]
+            waypoint.pose.position.z = point[2]
+            waypoint.pose.orientation.x = point[3]
+            waypoint.pose.orientation.y = point[4]
+            waypoint.pose.orientation.z = point[5]
+            waypoint.pose.orientation.w = point[6]
+            if(point[7]==1):
+                waypoint.gripper =True
+            else:
+                waypoint.gripper =True
+            self.waypoints.append(waypoint)
+        rospy.logerr(self.waypoints)
 
     def update(self):
         rate = rospy.Rate(1) # publish freacuancy (DO NOT Change)
@@ -281,24 +304,18 @@ class RobotPX():
 
 
     def srvf_step(self,step_srvRequest):
-        rospy.logerr(step_srvRequest)
         msg = step_srvResponse()
 
         self.group.set_pose_target(step_srvRequest.pose)
         plan = self.group.plan()
         msg.ErrorCode = plan[3]
-        rospy.logerr(plan[0])
-        rospy.logerr(plan[1])
-        rospy.logerr(plan[2])
-        rospy.logerr(plan[3])
+
         if(not plan[0]): 
-            rospy.logerr("ERROR")
-            rospy.logerr("ERROR")
-            # msg.ErrorCode = 
+            rospy.logerr("ERROR path plan NOT FOUND")
+
             return msg
 
         self.group.execute(plan[1], wait=True)
-
         if(step_srvRequest.gripper):
             self.group_gripper.set_named_target("Home")
             self.group_gripper.go(wait=True)
@@ -306,6 +323,8 @@ class RobotPX():
             self.group_gripper.set_named_target("Open")
             self.group_gripper.go(wait=True)
 
+        self.waypoints.append(step_srvRequest)
+        self.srvf_saveWaypoints(EmptyRequest)
         return msg
 
     def srvf_execute_plan(self,EmptyRequest):
@@ -316,13 +335,7 @@ class RobotPX():
 
         wpose = self.group.get_current_pose().pose
         homePose = self.group.get_current_pose().pose
-        # wpose.position.x= 0.12551517150364047
-        # wpose.position.y= -0.006552229785396738
-        # wpose.position.z= -0.1012197766621168
-        # wpose.orientation.x= 0.01761418643272797
-        # wpose.orientation.y= 0.6752976881272681
-        # wpose.orientation.z= -0.019225800746807322
-        # wpose.orientation.w= 0.7370842159698743
+
 
         wpose.position.x= 0.1643906955169384
         wpose.position.y= -0.10445289507566019
@@ -387,6 +400,33 @@ class RobotPX():
 
         return EmptyResponse()
 
+    def srvf_saveWaypoints(self,EmptyRequest):
+        finalList = []
+        i=0
+        for item in self.waypoints:
+            tempList = []
+            tempList.append(item.pose.position.x)
+            tempList.append(item.pose.position.y)
+            tempList.append(item.pose.position.z)
+            tempList.append(item.pose.orientation.x)
+            tempList.append(item.pose.orientation.y)
+            tempList.append(item.pose.orientation.z)
+            tempList.append(item.pose.orientation.w)
+            if(item.gripper):
+                tempList.append(1)
+            else:
+                tempList.append(0)
+            finalList.append(tempList)
+
+            rospy.set_param("/waypoints/points/pt"+str(i),tempList)
+            i+=1
+        rospy.logerr("sadfsgfeswrgergergre")
+        return EmptyResponse()
+
+    def srvf_clearWaypoints(self,EmptyRequest):
+        self.waypoints = []
+        self.srvf_saveWaypoints(EmptyRequest)
+        return EmptyResponse()
 
 if __name__ == '__main__':
     try:
