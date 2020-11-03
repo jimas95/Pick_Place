@@ -168,9 +168,9 @@ class RobotPX():
         box_pose.pose.orientation.w = 1.0
         box_pose.pose.position.x = 0.2
         box_pose.pose.position.y = -0.12
-        box_pose.pose.position.z = -0.25 + 0.15
+        box_pose.pose.position.z = -0.25 + 0.1
         self.box_name = "graspObject"
-        self.scene.add_box(self.box_name, box_pose, size=(0.025, 0.025, 0.15))
+        self.scene.add_box(self.box_name, box_pose, size=(0.025, 0.025, 0.1))
 
         if(not self.wait_for_state_update(objName = self.box_name, box_is_known=True, timeout=10)):
             rospy.logerr("ERROR ADDING OBJECT --> "+ self.box_name)
@@ -280,7 +280,7 @@ class RobotPX():
         self.group.execute(self.plan, wait=True)
         rospy.logdebug("path DONE")
         return EmptyResponse()
-
+    
     def srvf_reset(self,EmptyRequest):
 
         # check if object exists 
@@ -298,6 +298,9 @@ class RobotPX():
         if(res):
             self.remove_obj("graspObject")
         self.add_graspObject()
+
+        self.group.set_named_target("Home")
+        self.group.go()
 
 
         return EmptyResponse()
