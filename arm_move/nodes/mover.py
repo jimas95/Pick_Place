@@ -31,20 +31,6 @@ class RobotPX():
                                                     moveit_msgs.msg.DisplayTrajectory,
                                                     queue_size=20)
 
-        ## Getting Basic Information
-        planning_frame = group.get_planning_frame()
-        print( "============ Reference frame: %s" % planning_frame)
-
-        eef_link = group.get_end_effector_link()
-        print( "============ End effector: %s" % eef_link)
-
-        group_names = robot.get_group_names()
-        print( "============ Robot Groups:", robot.get_group_names())
-
-        print( "============ print(ing robot state")
-        print( robot.get_current_state())
-        print( "")
-
 
         # Misc variables
         self.box_name = ''
