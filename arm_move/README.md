@@ -1,16 +1,3 @@
-
-
-
-open rviz and move it 
-link : https://github.com/Interbotix/interbotix_ros_arms/tree/master/interbotix_examples/interbotix_moveit_interface
-
-roslaunch interbotix_moveit_interface moveit_interface.launch robot_name:=px100 use_python_interface:=True use_fake:=True 
-
-roslaunch interbotix_moveit_interface moveit_interface.launch robot_name:=px100 use_python_interface:=True use_actual:=True 
-
-
-
-
 # homework02-Dimitrios Chamzas 11/2020
 
 # Brief overview
@@ -77,4 +64,4 @@ The launch file auto uploads some points from a yaml file into the parameter ser
 
 # Example 
 
-![]https://github.com/ME495-EmbeddedSystems/homework-3-jimas95/blob/arm/gifs/real_arm.gif
+![](https://github.com/ME495-EmbeddedSystems/homework-3-jimas95/blob/arm/gifs/real_arm.gif)
