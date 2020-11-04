@@ -1,15 +1,13 @@
 <launch>
 
-  <arg name="robot_name"                  default=""/>
+  <arg name="robot_name"                  default="px100"/>
   <arg name="arm_operating_mode"          default="position"/>
   <arg name="arm_profile_velocity"        default="131"/>
   <arg name="arm_profile_acceleration"    default="15"/>
-  <arg name="use_pid_cntlrs"              default="false"/>
-  <arg name="use_gazebo"                  default="false"/>
+  <arg name="use_pid_cntlrs"              default="true"/>
   <arg name="use_actual"                  default="false"/>
   <arg name="use_fake"                    default="false"/>
-  <arg name="moveit_interface_gui"        default="true"/>
-  <arg name="use_python_interface"        default="false"/>
+  <arg name="use_node"                    default="true"/>
 
   <include file="$(find interbotix_moveit)/launch/interbotix_moveit.launch">
     <arg name="robot_name"                value="$(arg robot_name)"/>
@@ -17,17 +15,15 @@
     <arg name="arm_profile_velocity"      value="$(arg arm_profile_velocity)"/>
     <arg name="arm_profile_acceleration"  value="$(arg arm_profile_acceleration)"/>
     <arg name="use_pid_cntlrs"            value="$(arg use_pid_cntlrs)"/>
-    <arg name="use_gazebo"                value="$(arg use_gazebo)"/>
     <arg name="use_actual"                value="$(arg use_actual)"/>
     <arg name="use_fake"                  value="$(arg use_fake)"/>
     <arg name="dof"                       value="4"/>
   </include>
 
     <rosparam command="load" file="$(find arm_move)/config/waypoints.yaml"/>
-<!-- <rosparam command="load" file="$(find arm_move)/config/waypoints.yaml" /> -->
     
-  <node if="$(arg use_python_interface)"
-    name="moveit_python_interface"
+  <node if="$(arg use_node)"
+    name="RobotPX"
     pkg="arm_move"
     type="mover.py"
     respawn="false"
