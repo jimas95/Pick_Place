@@ -16,16 +16,38 @@ import tf2_ros
 
 """ NODE RobotPX, robot: px100
 
+Services : 
+        '/px100/get_joint_states' --> type:Trigger | return current joint state
+        '/px100/get_eef_pose'     --> type:Trigger | return end effector position
+        '/px100/pathPlan'         --> type:Empty   | makes a pre set plan based on cartesian pathplaning
+        '/px100/stop'             --> type:Empty   | stop the infinete loop of follow service(if active)
+        '/px100/saveWaypoints'    --> type:Empty   | saves waypoints into parameter server namespace /waypoints/points/pt1-N
+        '/px100/clearWaypoints'   --> type:Empty,  | clear waypoint list, delete parameter server points
+        '/px100/follow'           --> type:SetBool | starts from current position and executes a path plan for all waypoints and finish at the home position, if Bool--> True itterated infinetly throught the waypoints
+        '/px100/reset'            --> type:SetBool | resets world obstacles, if bool --> True removes all stored waypoints
+        '/px100/step'             --> type:step_srv| executes (if possible) a path plan from current position to set position args --> Pose : goal position , bool : at end state have gripper open/close
 
+RobotPX does not have any Publishers or Subscribers but it does communicate with the rest of the world using the Moveti pgk
 
 """
 
 
+
+
 class RobotPX():
+    """
+    Init of class robot px100
+    initialize/setup robot control 
+    create RobotCommander,PlanningSceneInterface,MoveGroupCommander(robot & gripper)
+    create services 
+    create my world
+    load waypoints
+    """
     def __init__(self):
         super(RobotPX, self).__init__()
         moveit_commander.roscpp_initialize(sys.argv)
-        rospy.init_node('RobotPX',anonymous=True,log_level=rospy.DEBUG)
+        # rospy.init_node('RobotPX',anonymous=True,log_level=rospy.DEBUG)
+        rospy.init_node('RobotPX',anonymous=True)
         robot_name = "px100"
         self.robot_name = robot_name
         self.dof = 4
@@ -66,14 +88,16 @@ class RobotPX():
         self.planning_frame = planning_frame
         self.eef_link = eef_link
         self.group_names = group_names
+        self.loopa = False
         #create services 
         self.srv_joint_state  = rospy.Service('get_joint_states', Trigger, self.srvf_joint_state)
         self.srv_eef_position = rospy.Service('get_eef_pose', Trigger, self.srvf_eef_position)
         self.srv_pathPlan = rospy.Service('pathPlan', Empty, self.srvf_pathPlan)
         self.srv_reset = rospy.Service('reset', SetBool, self.srvf_reset)
+        self.srv_Stop = rospy.Service('stop', Empty, self.srvf_Stop)
         self.srv_saveWaypoints = rospy.Service('saveWaypoints', Empty, self.srvf_saveWaypoints)
         self.srv_clearWaypoints = rospy.Service('clearWaypoints', Empty, self.srvf_clearWaypoints)
-        self.srv_follow = rospy.Service('follow', Empty, self.srvf_follow)
+        self.srv_follow = rospy.Service('follow', SetBool, self.srvf_follow)
         self.srv_step = rospy.Service('step', step_srv, self.srvf_step)
 
         #create my scene 
@@ -112,7 +136,7 @@ class RobotPX():
     def update(self):
         rate = rospy.Rate(1) # publish freacuancy 
         while not rospy.is_shutdown():
-            # rospy.logdebug("Hello!")
+            rospy.logdebug("Hello!")
             self.print_joint_state()
             self.get_eef_pose(True)
             rospy.logdebug(self.group_gripper.get_current_joint_values())
@@ -404,41 +428,66 @@ class RobotPX():
         self.srvf_saveWaypoints(EmptyRequest)
         return msg
 
+
+    """
+    Service stop 
+    it will make the follow service iteration infinete loop to stop (if it weas active)
+    """
+    def srvf_Stop(self,EmptyRequest):
+        self.loopa = False
+        return EmptyResponse()
+
+
     """ 
     SERVICE follow
     iterates all the waypoints and executes them one by one 
     """
-    def srvf_follow(self,EmptyRequest):
+    def srvf_follow(self,SetBoolRequest):
+        if(SetBoolRequest.data):
+            self.loopa = True
+        while(self.loopa):
+            for point in self.waypoints:
+                # execute whole planning
+                rospy.logdebug(point)
+                self.group.set_pose_target(point.pose)
+                plan = self.group.plan()
+                if(not plan[0]): 
+                    rospy.logerr("ERROR path plan NOT FOUND")
+                    return EmptyResponse()
 
-        for point in self.waypoints:
-            
-            rospy.logdebug(point)
-            self.group.set_pose_target(point.pose)
-            plan = self.group.plan()
+                self.group.execute(plan[1], wait=True)
 
-            if(not plan[0]): 
-                rospy.logerr("ERROR path plan NOT FOUND")
-                return EmptyResponse()
+                # set gripper on/off
+                if(point.gripper):
+                    joint_goal = self.group_gripper.get_current_joint_values()
+                    # joint_goal[0] = 0.0165
+                    # joint_goal[1] = -0.0165
+                    joint_goal[0] = 0.022
+                    joint_goal[1] = -0.022
+                    # self.group_gripper.set_named_target("Home")
+                    self.group_gripper.go(joint_goal,wait=True)
+                    self.attach_box()
+                else:
+                    joint_goal = self.group_gripper.get_current_joint_values()
+                    joint_goal[0] = 0.035
+                    joint_goal[1] = -0.035
+                    # self.group_gripper.set_named_target("Open")
+                    self.group_gripper.go(joint_goal,wait=True)
+                    self.detach_box("graspObject")
 
-            self.group.execute(plan[1], wait=True)
+                
+            # go to home position , reset world
+            self.group.set_named_target("Home")
+            self.group.go(wait=True)
+            msg = SetBoolRequest
+            msg.data = False
+            self.srvf_reset(msg)
 
-            if(point.gripper):
-                joint_goal = self.group_gripper.get_current_joint_values()
-                # joint_goal[0] = 0.0165
-                # joint_goal[1] = -0.0165
-                joint_goal[0] = 0.022
-                joint_goal[1] = -0.022
-                # self.group_gripper.set_named_target("Home")
-                self.group_gripper.go(joint_goal,wait=True)
-                self.attach_box()
-            else:
-                joint_goal = self.group_gripper.get_current_joint_values()
-                joint_goal[0] = 0.035
-                joint_goal[1] = -0.035
-                # self.group_gripper.set_named_target("Open")
-                self.group_gripper.go(joint_goal,wait=True)
-                self.detach_box("graspObject")
-        return EmptyResponse()
+        #return msg        
+        msg = SetBoolResponse()
+        msg.message = " "
+        msg.success = True
+        return msg
 
 
     """SERVICE reset
