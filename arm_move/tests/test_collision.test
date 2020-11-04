@@ -29,13 +29,13 @@ class TestCollision(unittest.TestCase):
 
         #create position point 
         point = Pose()
-        point.position.x = 0.0
-        point.position.y = 0.2
-        point.position.z = -0.10
-        point.orientation.x = 0.0
-        point.orientation.y = 0.0 
-        point.orientation.z = 0.7 
-        point.orientation.w = 0.7
+        point.position.x = -0.019530637158030623
+        point.position.y = 0.1438018126739689
+        point.position.z = -0.016214677971962063
+        point.orientation.x = -0.5083722252857794
+        point.orientation.y =  0.44399427825272647
+        point.orientation.z =  0.5557410088722311
+        point.orientation.w = 0.48536449447245317
 
         #input msg
         msg = step_srvRequest()
@@ -66,13 +66,13 @@ class TestCollision(unittest.TestCase):
 
         #create position point 
         point = Pose()
-        point.position.x = 0.15
-        point.position.y = 0.0
-        point.position.z = 0.10
-        point.orientation.x = 0.0
-        point.orientation.y = 0.0 
-        point.orientation.z = 0.0 
-        point.orientation.w = 1.0
+        point.position.x = -0.03345255525340866
+        point.position.y =0.20007212634992672
+        point.position.z = 0.07620500840517119
+        point.orientation.x =-0.23327588256691523
+        point.orientation.y = 0.1975099080472931
+        point.orientation.z = 0.7266628798463037
+        point.orientation.w =0.6152505651271302
 
         #input msg
         msg = step_srvRequest()
