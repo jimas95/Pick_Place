@@ -81,7 +81,7 @@ include_directories(
 catkin_install_python(PROGRAMS
    nodes/mover.py
    nodes/arm_tutorial.py
-   tests/arm.test
+   tests/test_collision.test
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
  )
 
@@ -94,5 +94,6 @@ catkin_install_python(PROGRAMS
 
 
 if(CATKIN_ENABLE_TESTING)
-   catkin_add_nosetests(tests) 
+   find_package(rostest REQUIRED)
+   add_rostest(tests/arm.test)
 endif()
