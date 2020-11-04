@@ -18,6 +18,14 @@ class TestCollision(unittest.TestCase):
 
         # create service caller
         srv = rospy.ServiceProxy("/px100/step", step_srv)
+        srv_reset = rospy.ServiceProxy("/px100/reset", SetBool)
+
+
+        #input msg step
+        msgR = SetBoolRequest()
+        msgR.data = False
+        # call step reset
+        responce = srv_reset.call(msgR)
 
         #create position point 
         point = Pose()
@@ -47,6 +55,14 @@ class TestCollision(unittest.TestCase):
         rospy.init_node("test")
         # create service caller
         srv = rospy.ServiceProxy("/px100/step", step_srv)
+        srv_reset = rospy.ServiceProxy("/px100/reset", SetBool)
+
+
+        #input msg reset
+        msgR = SetBoolRequest()
+        msgR.data = False
+        # call step reset
+        responce = srv_reset.call(msgR)
 
         #create position point 
         point = Pose()
@@ -67,6 +83,9 @@ class TestCollision(unittest.TestCase):
         result = False
         if(responce.ErrorCode.val==1):
             result = True
+
+        srv_reset.call(msgR)
+
         self.assertTrue(result)
 
 if __name__=='__main__':
