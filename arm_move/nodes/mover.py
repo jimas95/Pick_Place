@@ -59,6 +59,7 @@ class RobotPX():
         group = moveit_commander.MoveGroupCommander(group_name)
         group_gripper_name = "interbotix_gripper"
         group_gripper = moveit_commander.MoveGroupCommander(group_gripper_name)
+        
         display_trajectory_publisher = rospy.Publisher("move_group/display_planned_path",
                                                     moveit_msgs.msg.DisplayTrajectory,
                                                     queue_size=20)
@@ -464,15 +465,17 @@ class RobotPX():
                     # joint_goal[1] = -0.0165
                     joint_goal[0] = 0.022
                     joint_goal[1] = -0.022
-                    # self.group_gripper.set_named_target("Home")
-                    self.group_gripper.go(joint_goal,wait=True)
+                    self.group_gripper.set_named_target("Home")
+                    # self.group_gripper.go(joint_goal,wait=True)
+                    self.group_gripper.go(wait=True)
                     self.attach_box()
                 else:
                     joint_goal = self.group_gripper.get_current_joint_values()
                     joint_goal[0] = 0.035
                     joint_goal[1] = -0.035
-                    # self.group_gripper.set_named_target("Open")
-                    self.group_gripper.go(joint_goal,wait=True)
+                    self.group_gripper.set_named_target("Open")
+                    # self.group_gripper.go(joint_goal,wait=True)
+                    self.group_gripper.go(wait=True)
                     self.detach_box("graspObject")
 
                 
