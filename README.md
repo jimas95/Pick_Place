@@ -8,3 +8,5 @@
 2. arm_move: In this project we will use the MoveIt Python API to create a planning scene and perform some path planning tasks.
     1. The robot arm sits on top of a table. There is a Box also that sits on top of the table and is an obstacle.
     2. The robot has to pick an object for one side of the obstacle and place on the other while avoiding the box obstacle.
+
+For more information about each package, each packages has its own README file
