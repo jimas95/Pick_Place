@@ -42,7 +42,7 @@ class robotControl:
         self.pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
 
 
-    #calculates the vector from turtle position --> target point
+    """calculates the vector from turtle position --> target point"""
     def calVector(self):
 
         #calculate distance from target point 
@@ -57,10 +57,10 @@ class robotControl:
 
 
 
-
+    """ calculate the proper linear and angular velocity based on current position,orientetion anf goal point"""
     def calVelocity(self):   # this is my control....
-        #conver orientation
         
+        #convert orientation
         orientation_q = self.robotPosition.rotation
         orientation_list = [orientation_q.x, orientation_q.y, orientation_q.z, orientation_q.w]
         (roll, pitch, yaw) = euler_from_quaternion (orientation_list)
@@ -88,7 +88,7 @@ class robotControl:
             
 
 
-    #checks if we reached last point
+    """checks if we reached last point"""
     def set_next_point(self):
 
         self.point_id += 1
@@ -97,10 +97,12 @@ class robotControl:
         
         self.point_target = self.pointSet[self.point_id] #set next target point
 
-# main update function
-# calculates direction vector 
-# calculates appropriate speed
-# publish velocity
+    """
+    main update function
+    calculates direction vector 
+    calculates appropriate speed
+    publish velocity
+    """
     def update(self,trans):
         rospy.loginfo("Debug")
         
@@ -118,7 +120,7 @@ class robotControl:
         
 
 
-# main loop
+"""main Loop: starts node, and iterates"""
 def talker(): 
     rospy.init_node('Follow_Points', anonymous=False)
     rate = rospy.Rate(20) # 20HZ
@@ -143,8 +145,9 @@ def talker():
         rate.sleep()
 
 
-
-
+"""
+Start everyting
+"""
 if __name__ == '__main__':
     try:
         talker()

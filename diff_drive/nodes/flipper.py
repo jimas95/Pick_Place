@@ -21,7 +21,7 @@ class robotControl:
         self.pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
         self.counter = 0 
 
-# set correct velocitys in order to flip the robot
+    """ set correct velocitys in order to flip the robot"""
     def update(self,trans):
 
         self.counter = self.counter + 1
@@ -54,7 +54,7 @@ class robotControl:
         
 
 
-# main Loop
+"""main Loop: starts node, and iterates"""
 def talker(): 
     rospy.init_node('Flip', anonymous=False)
     rate = rospy.Rate(20) # publish freacuancy (DO NOT Change)
@@ -75,7 +75,9 @@ def talker():
 
 
 
-
+"""
+Start everyting
+"""
 if __name__ == '__main__':
     try:
         talker()
