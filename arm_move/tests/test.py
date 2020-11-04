@@ -26,7 +26,7 @@ class TestCollision(unittest.TestCase):
         point.position.z = -0.10
         point.orientation.x = 0.0
         point.orientation.y = 0.0 
-        point.orientation.z = -0.7 
+        point.orientation.z = 0.7 
         point.orientation.w = 0.7
 
         #input msg
