@@ -21,13 +21,13 @@ class TestCollision(unittest.TestCase):
 
         #create position point 
         point = Pose()
-        point.position.x = 0.15
-        point.position.y = 0.1
-        point.position.z = 0.10
+        point.position.x = 0.0
+        point.position.y = 0.2
+        point.position.z = -0.10
         point.orientation.x = 0.0
         point.orientation.y = 0.0 
-        point.orientation.z = 0.0 
-        point.orientation.w = 1.0
+        point.orientation.z = -0.7 
+        point.orientation.w = 0.7
 
         #input msg
         msg = step_srvRequest()
