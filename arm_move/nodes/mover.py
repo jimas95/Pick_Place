@@ -9,9 +9,17 @@ import geometry_msgs.msg
 from math import pi
 from std_msgs.msg import String
 from std_srvs.srv import Trigger,TriggerResponse,TriggerRequest,Empty,EmptyRequest,EmptyResponse
+from std_srvs.srv import SetBool,SetBoolRequest,SetBoolResponse
 from moveit_commander.conversions import pose_to_list
 from arm_move.srv import step_srv,step_srvResponse,step_srvRequest
 import tf2_ros
+
+""" NODE RobotPX, robot: px100
+
+
+
+"""
+
 
 class RobotPX():
     def __init__(self):
@@ -62,7 +70,7 @@ class RobotPX():
         self.srv_joint_state  = rospy.Service('get_joint_states', Trigger, self.srvf_joint_state)
         self.srv_eef_position = rospy.Service('get_eef_pose', Trigger, self.srvf_eef_position)
         self.srv_pathPlan = rospy.Service('pathPlan', Empty, self.srvf_pathPlan)
-        self.srv_reset = rospy.Service('reset', Empty, self.srvf_reset)
+        self.srv_reset = rospy.Service('reset', SetBool, self.srvf_reset)
         self.srv_saveWaypoints = rospy.Service('saveWaypoints', Empty, self.srvf_saveWaypoints)
         self.srv_clearWaypoints = rospy.Service('clearWaypoints', Empty, self.srvf_clearWaypoints)
         self.srv_follow = rospy.Service('follow', Empty, self.srvf_follow)
@@ -70,7 +78,9 @@ class RobotPX():
 
         #create my scene 
         self.create_my_scene()
-        self.srvf_reset(EmptyRequest)
+        msg = SetBoolRequest()
+        msg.data = False
+        self.srvf_reset(msg)
 
         #load waypoints
         data = rospy.get_param("/points")
@@ -93,6 +103,7 @@ class RobotPX():
                 waypoint.gripper =False
 
             self.waypoints.append(waypoint)
+        self.srvf_saveWaypoints(EmptyRequest)
     """
     main update loop
     does not do much only debuging mesagges
@@ -433,7 +444,7 @@ class RobotPX():
     """SERVICE reset
     Reset scene, delete/create obstacle,grasping obstacle set home robot position
     """
-    def srvf_reset(self,EmptyRequest):
+    def srvf_reset(self,SetBoolRequest):
         res = self.object_exists("obstacle")
         if(res):
             self.remove_obj("obstacle")
@@ -446,7 +457,13 @@ class RobotPX():
 
         self.group.set_named_target("Home")
         self.group.go()
-        return EmptyResponse()
+        msg = SetBoolResponse()
+        msg.message = " "
+        msg.success = True
+        if(SetBoolRequest.data):
+            self.srvf_clearWaypoints(EmptyRequest)
+            msg.message = "waypoints reset"
+        return msg
 
     """SERVICE saveWaypoints
     update points in parameters server based 
@@ -479,7 +496,8 @@ class RobotPX():
     """
     def srvf_clearWaypoints(self,EmptyRequest):
         self.waypoints = []
-        self.srvf_saveWaypoints(EmptyRequest)
+        rospy.delete_param("/waypoints/")
+        # self.srvf_saveWaypoints(EmptyRequest)
         return EmptyResponse()
 
 """
