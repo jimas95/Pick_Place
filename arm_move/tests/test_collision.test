@@ -9,8 +9,20 @@ from std_srvs.srv import SetBool,SetBoolRequest,SetBoolResponse
 from arm_move.srv import step_srv,step_srvResponse,step_srvRequest
 from geometry_msgs.msg import Pose
 
-class TestCollision(unittest.TestCase):
+"""
+this class is run by the catkin_make run_tests 
+It does 2 seperate tests :
+    test_step_UnvalidPath
+    test_step_validPath
+"""
 
+class TestCollision(unittest.TestCase):
+    """
+    call reset in order to set robot at home position
+    sets a position for the eef inside the table, making it an unvalid path
+    then calls the step service which should return -1 --> was not succefull to find a path
+    we do this in order to check that the algorithm implements collision avoidence
+    """
     def test_step_UnvalidPath(self):
         #init node 
         sleep(6)
@@ -49,7 +61,12 @@ class TestCollision(unittest.TestCase):
             result = True
         self.assertTrue(result)
 
-
+    """
+    call reset in order to set robot at home position
+    sets a position for the eef that is valid
+    then calls the step service which should return 1 --> succefull to find a path
+    we do this in order to check that the algorithm is able to find and execute a simple plan
+    """
     def test_step_validPath(self):
         #init node 
         rospy.init_node("test")
