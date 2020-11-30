@@ -1,0 +1,16 @@
+18/18 Exemplary work
+1. README.md
+   You don't need <> for the code snippets, the backticks ` are all that are needed
+2. Comments
+3. Git
+4. catkin_lint is clean
+5. ddrive displays in rviz
+6. ddrive launches in gazebo
+7. ddrive follows rectangular path
+8. ddrive does the flip
+9. mover node reset service
+10. mover node step service
+11. mover node follow service
+12. arm.launch
+13. arm.test
+14. video
